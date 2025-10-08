@@ -31,3 +31,10 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+#rider
+bin/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
