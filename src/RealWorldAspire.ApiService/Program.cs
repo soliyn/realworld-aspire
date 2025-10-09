@@ -1,3 +1,5 @@
+using RealWorldAspire.ApiService.Features.Articles;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
@@ -18,6 +20,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+var appApi = app.MapGroup("/api");
+appApi.MapArticleEndpoints();
 
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 

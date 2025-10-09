@@ -1,0 +1,6 @@
+@ApiService_HostAddress = http://localhost:60589
+
+GET {{ApiService_HostAddress}}/api/articles/how-to-train-your-dragon
+Accept: application/json
+
+###

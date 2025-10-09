@@ -1,10 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.AppHost", "RealWorldAspire.AppHost\RealWorldAspire.AppHost.csproj", "{3264F0F9-ABD5-4C87-B34F-FD60362350B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.AppHost", "src\RealWorldAspire.AppHost\RealWorldAspire.AppHost.csproj", "{3264F0F9-ABD5-4C87-B34F-FD60362350B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.ServiceDefaults", "RealWorldAspire.ServiceDefaults\RealWorldAspire.ServiceDefaults.csproj", "{F64509E0-3F92-42F7-B96B-65F1CF11AC1D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.ServiceDefaults", "src\RealWorldAspire.ServiceDefaults\RealWorldAspire.ServiceDefaults.csproj", "{F64509E0-3F92-42F7-B96B-65F1CF11AC1D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.ApiService", "RealWorldAspire.ApiService\RealWorldAspire.ApiService.csproj", "{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.ApiService", "src\RealWorldAspire.ApiService\RealWorldAspire.ApiService.csproj", "{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7F8BF127-2BF6-45B6-B40B-589758067480}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7D69334F-9484-4C5F-A880-E48C8B53FCDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealWorldAspire.ApiService.Tests", "tests\RealWorldAspire.ApiService.Tests\RealWorldAspire.ApiService.Tests.csproj", "{B458E1C9-2274-414C-BEE3-2B17679C862D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +30,15 @@ Global
 		{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B458E1C9-2274-414C-BEE3-2B17679C862D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B458E1C9-2274-414C-BEE3-2B17679C862D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B458E1C9-2274-414C-BEE3-2B17679C862D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B458E1C9-2274-414C-BEE3-2B17679C862D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{25B4BDD0-F860-4545-AC1C-8A2BDD0AC0A0} = {7F8BF127-2BF6-45B6-B40B-589758067480}
+		{3264F0F9-ABD5-4C87-B34F-FD60362350B9} = {7F8BF127-2BF6-45B6-B40B-589758067480}
+		{F64509E0-3F92-42F7-B96B-65F1CF11AC1D} = {7F8BF127-2BF6-45B6-B40B-589758067480}
+		{B458E1C9-2274-414C-BEE3-2B17679C862D} = {7D69334F-9484-4C5F-A880-E48C8B53FCDA}
 	EndGlobalSection
 EndGlobal
