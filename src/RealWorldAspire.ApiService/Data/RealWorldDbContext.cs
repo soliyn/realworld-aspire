@@ -5,6 +5,10 @@ namespace RealWorldAspire.ApiService.Data;
 
 public class RealWorldDbContext : DbContext
 {
+    public RealWorldDbContext()
+    {
+    }
+    
     public RealWorldDbContext(DbContextOptions<RealWorldDbContext> options) : base(options)
     {
     }
@@ -31,6 +35,6 @@ public class RealWorldDbContext : DbContext
         ;
     }
 
-    public DbSet<Article> Articles { get; set; }
-    public DbSet<Author> Authors { get; set; }
+    public virtual DbSet<Article> Articles { get; set; }
+    public virtual DbSet<Author> Authors { get; set; }
 }

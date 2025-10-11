@@ -11,6 +11,6 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AWebApplication_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003FUsers_003Folen_003FAppData_003FRoaming_003FJetBrains_003FRider2025_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003Ff23fbbfb5fbc45a3996fcf17454973d51b920_003F9e_003F4c4001d2_003FWebApplication_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=0c552e01_002D641e_002D4234_002D804a_002D1ff22154ec48/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Should_Return_Article" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::B458E1C9-2274-414C-BEE3-2B17679C862D::net9.0::RealWorldAspire.ApiService.Tests.Features.Articles.ArticleHandlersTests.GetArticle.Should_Return_Article&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::B458E1C9-2274-414C-BEE3-2B17679C862D::net9.0::RealWorldAspire.ApiService.Tests.Features.Articles.ArticleHandlersTests.GetArticle&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

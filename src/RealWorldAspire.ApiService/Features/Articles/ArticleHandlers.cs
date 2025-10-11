@@ -1,27 +1,40 @@
-﻿namespace RealWorldAspire.ApiService.Features.Articles;
+﻿using Microsoft.EntityFrameworkCore;
+using RealWorldAspire.ApiService.Data;
+
+namespace RealWorldAspire.ApiService.Features.Articles;
 
 public static class ArticleHandlers
 {
-    public static IResult GetArticle(string slug)
+    public static async Task<IResult> GetArticle(string slug, RealWorldDbContext dbContext)
     {
-        return TypedResults.Ok(new GetArticleResponse()
+        var article = await dbContext.Articles
+            .Include(x => x.Author)
+            .FirstOrDefaultAsync(x => x.Slug == slug);
+
+        if (article == null)
         {
-            Slug = "how-to-train-your-dragon",
-            Title = "How to train your dragon",
-            Description = "Ever wonder how?",
-            Body = "It takes a Jacobian",
-            TagList = new List<string> { "dragons", "training" },
-            CreatedAt = DateTime.Parse("2016-02-18T03:22:56.637Z"),
-            UpdatedAt = DateTime.Parse("2016-02-18T03:48:35.824Z"),
-            Favorited = false,
-            FavoritesCount = 0,
+            return TypedResults.NotFound();
+        }
+
+        var response = new GetArticleResponse
+        {
+            Slug = article.Slug,
+            Title = article.Title,
+            Description = article.Description,
+            Body = article.Body,
+            TagList = article.TagList?.ToList() ?? [],
+            CreatedAt = article.CreatedAt,
+            UpdatedAt = article.UpdatedAt,
+            Favorited = false, // Set based on user context if available
+            FavoritesCount = article.FavoritesCount,
             Author = new GetArticleResponse.AuthorDto
             {
-                Username = "jake",
-                Bio = "I work at statefarm",
-                Image = "https://i.stack.imgur.com/xHWG8.jpg",
-                Following = false
+                Username = article.Author.Username,
+                Bio = article.Author.Bio,
+                Image = article.Author.Image,
+                Following = false // Set based on user context if available
             }
-        });
+        };
+        return TypedResults.Ok(response);
     }
 }
