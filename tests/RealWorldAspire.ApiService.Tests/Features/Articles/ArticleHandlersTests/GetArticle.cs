@@ -6,6 +6,7 @@ using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
 using Shouldly;
+using Bogus;
 
 namespace RealWorldAspire.ApiService.Tests.Features.Articles.ArticleHandlersTests;
 
@@ -35,14 +36,14 @@ public class GetArticle
                 TagList = ["beginners", "javascript", "programming", "webdev"],
                 CreatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
-                Favorited = false,
+                Favorited = true,
                 FavoritesCount = 2,
                 Author = new GetArticleResponse.AuthorDto
                 {
                     Username = "johndoe",
                     Bio = "Full-stack developer passionate about clean code and innovative solutions. Love working with modern web technologies.",
                     Image = "https://raw.githubusercontent.com/gothinkster/node-express-realworld-example-app/refs/heads/master/src/assets/images/smiley-cyrus.jpeg",
-                    Following = false
+                    Following = true
                 }
             });
     }
@@ -56,8 +57,9 @@ public class GetArticle
 
     private List<Article> GetFakeArticles()
     {
-        return
-        [
+        // Manually defined articles for specific test cases
+        var articles = new List<Article>
+        {
             new Article()
             {
                 Slug = "how-to-learn-javascript-efficiently",
@@ -68,12 +70,13 @@ public class GetArticle
                 CreatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                 FavoritesCount = 2,
+                Favorited = true,
                 Author = new Author()
                 {
                     Username = "johndoe",
                     Bio = "Full-stack developer passionate about clean code and innovative solutions. Love working with modern web technologies.",
                     Image = "https://raw.githubusercontent.com/gothinkster/node-express-realworld-example-app/refs/heads/master/src/assets/images/smiley-cyrus.jpeg",
-                    Following = false
+                    Following = true
                 }
             },
             new Article()
@@ -94,6 +97,8 @@ public class GetArticle
                     Following = false
                 }
             }
-        ];
+        };
+
+        return articles;
     }
 }

@@ -7,6 +7,7 @@ public static class ArticleEndpoints
         var aep = endpoints.MapGroup("/articles");
 
         aep.MapGet("/{slug}", ArticleHandlers.GetArticle);
+        aep.MapGet("", ArticleHandlers.GetArticles);
         
         return endpoints;
     }
