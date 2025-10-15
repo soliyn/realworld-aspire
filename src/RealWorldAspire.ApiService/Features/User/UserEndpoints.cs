@@ -8,6 +8,8 @@ public static class UserEndpoints
 
         userEndPoints.MapGet("", UserHandlers.Get)
             .RequireAuthorization();
+        userEndPoints.MapPut("", UserHandlers.Update)
+            .RequireAuthorization();
         
         return endpoints;
     }

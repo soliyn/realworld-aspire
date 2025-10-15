@@ -24,9 +24,9 @@ public class AppUser : IdentityUser
 #pragma warning restore CS8765 // Nullability of type of parameter doesn't match overridden member (possibly because of nullability attributes).
     }
     
-    [MaxLength(500)]
+    [MaxLength(ValidationConstants.AppUser.BioMaxLength)]
     public string? Bio { get; set; }
 
-    [MaxLength(1000)]
+    [MaxLength(ValidationConstants.AppUser.ImageMaxLength)]
     public string? Image { get; set; }
 }
