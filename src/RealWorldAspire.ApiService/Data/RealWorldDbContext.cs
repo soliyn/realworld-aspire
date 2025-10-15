@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data.Models;
 
 namespace RealWorldAspire.ApiService.Data;
 
-public class RealWorldDbContext : DbContext
+public class RealWorldDbContext : IdentityDbContext<AppUser>
 {
     public RealWorldDbContext()
     {
@@ -15,6 +17,8 @@ public class RealWorldDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+        
         builder.Entity<Author>().HasKey(x => x.AuthorId);
 
         builder.Entity<Article>()

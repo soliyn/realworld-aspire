@@ -2,10 +2,12 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder
     .AddPostgres("postgres")
-    .WithPgAdmin()
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithPgAdmin(c => c.WithLifetime(ContainerLifetime.Persistent))
     ;
 var postgresdb = postgres
     .WithDataVolume("postgres-data-volume")
+    .WithLifetime(ContainerLifetime.Persistent)
     // .WithDataBindMount(source: @"C:\Temp\Data", isReadOnly: false)
     // .WithEnvironment("POSTGRES_PASSWORD", "mypassword")
     .AddDatabase("realworlddb")
