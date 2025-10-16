@@ -18,6 +18,21 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
+
+        builder.Entity<UserFollow>()
+            .HasKey(x => x.Id);
+
+        builder.Entity<UserFollow>()
+            .HasOne(uf => uf.Follower)
+            .WithMany(u => u.Following)
+            .HasForeignKey(uf => uf.FollowerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserFollow>()
+            .HasOne(uf => uf.Following)
+            .WithMany(u => u.Followers)
+            .HasForeignKey(uf => uf.FollowingId)
+            .OnDelete(DeleteBehavior.Restrict);
         
         builder.Entity<Author>().HasKey(x => x.AuthorId);
 
@@ -41,4 +56,5 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
 
     public virtual DbSet<Article> Articles { get; set; }
     public virtual DbSet<Author> Authors { get; set; }
+    public virtual DbSet<UserFollow> UserFollows { get; set; }
 }

@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
+using RealWorldAspire.ApiService.Features.Profiles;
 using RealWorldAspire.ApiService.Features.User;
 using RealWorldAspire.ApiService.Features.Users;
 
@@ -117,6 +118,7 @@ appApi
     .MapArticleEndpoints()
     .MapUserEndpoints()
     .MapUsersEndpoints()
+    .MapProfilesEndpoints()
     ;
 
 if (app.Environment.IsDevelopment())

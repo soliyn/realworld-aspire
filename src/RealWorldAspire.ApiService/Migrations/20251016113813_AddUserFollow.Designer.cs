@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RealWorldAspire.ApiService.Data;
@@ -12,9 +13,11 @@ using RealWorldAspire.ApiService.Data;
 namespace RealWorldAspire.ApiService.Migrations
 {
     [DbContext(typeof(RealWorldDbContext))]
-    partial class RealWorldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251016113813_AddUserFollow")]
+    partial class AddUserFollow
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,8 +334,6 @@ namespace RealWorldAspire.ApiService.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FollowerId");
-
                     b.HasIndex("FollowingId");
 
                     b.ToTable("UserFollows");
@@ -402,28 +403,11 @@ namespace RealWorldAspire.ApiService.Migrations
 
             modelBuilder.Entity("RealWorldAspire.ApiService.Data.Models.UserFollow", b =>
                 {
-                    b.HasOne("RealWorldAspire.ApiService.Data.Models.AppUser", "Follower")
-                        .WithMany("Following")
-                        .HasForeignKey("FollowerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RealWorldAspire.ApiService.Data.Models.AppUser", "Following")
-                        .WithMany("Followers")
+                    b.HasOne("RealWorldAspire.ApiService.Data.Models.AppUser", null)
+                        .WithMany()
                         .HasForeignKey("FollowingId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Follower");
-
-                    b.Navigation("Following");
-                });
-
-            modelBuilder.Entity("RealWorldAspire.ApiService.Data.Models.AppUser", b =>
-                {
-                    b.Navigation("Followers");
-
-                    b.Navigation("Following");
                 });
 #pragma warning restore 612, 618
         }

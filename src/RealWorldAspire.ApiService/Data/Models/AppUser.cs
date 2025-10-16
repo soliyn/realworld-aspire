@@ -29,4 +29,7 @@ public class AppUser : IdentityUser
 
     [MaxLength(ValidationConstants.AppUser.ImageMaxLength)]
     public string? Image { get; set; }
+
+    public List<UserFollow> Followers { get; } = [];
+    public List<UserFollow> Following { get; } = [];
 }
