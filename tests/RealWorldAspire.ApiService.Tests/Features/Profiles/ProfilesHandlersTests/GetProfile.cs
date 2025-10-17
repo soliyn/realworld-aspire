@@ -19,7 +19,7 @@ public class GetProfile
     {
         // Arrange
         var userManagerMock = new Mock<UserManager<AppUser>>(
-            Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null
+            Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
         );
         var principal = new ClaimsPrincipal(); 
         userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
@@ -48,7 +48,7 @@ public class GetProfile
         };
 
         var userManagerMock = new Mock<UserManager<AppUser>>(
-            Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null
+            Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
         );
         userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(new AppUser());

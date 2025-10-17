@@ -2,7 +2,8 @@
 
 public class LoginUserRequest
 {
-    public UserModel User { get; set; }
+    public required UserModel User { get; set; }
+    
     public class UserModel
     {
         public required string Email { get; set; }

@@ -7,7 +7,6 @@ var postgres = builder
     ;
 var postgresdb = postgres
     .WithDataVolume("postgres-data-volume")
-    .WithLifetime(ContainerLifetime.Persistent)
     // .WithDataBindMount(source: @"C:\Temp\Data", isReadOnly: false)
     // .WithEnvironment("POSTGRES_PASSWORD", "mypassword")
     .AddDatabase("realworlddb")

@@ -2,7 +2,8 @@
 
 public class CreateUserRequest
 {
-    public UserModel User { get; set; }
+    public required UserModel User { get; set; }
+    
     public class UserModel
     {
         public required string Username { get; set; }

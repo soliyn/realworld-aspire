@@ -5,7 +5,8 @@ namespace RealWorldAspire.ApiService.Features.User;
 
 public class UpdateUserRequest
 {
-    public UserModel User { get; set; }
+    public required UserModel User { get; set; }
+    
     public class UserModel
     {
         [MaxLength(ValidationConstants.AppUser.UserNameMaxLength)]

@@ -25,7 +25,7 @@ public class GetArticles
         _dbContextMock.Setup(x => x.Articles).Returns(articleDbSetMock.Object);
 
         _userManagerMock = new Mock<UserManager<AppUser>>(
-            Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null
+            Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
         );
         _principal = new ClaimsPrincipal(); 
         _userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
