@@ -21,10 +21,8 @@ public class Article
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    
-    public bool Favorited { get; set; }
-    
-    public int FavoritesCount { get; set; }
+
+    public List<AppUser> FavoritedByUsers { get; set; } = [];
     
     public required Author Author { get; set; }
 }

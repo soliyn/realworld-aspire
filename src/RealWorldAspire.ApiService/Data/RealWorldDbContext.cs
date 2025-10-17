@@ -52,9 +52,16 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
             )
         ;
+
+        builder.Entity<Article>()
+            .HasMany(e => e.FavoritedByUsers)
+            .WithMany(e => e.FavoritedArticles)
+            .UsingEntity<FavoriteArticle>()
+        ;
     }
 
     public virtual DbSet<Article> Articles { get; set; }
     public virtual DbSet<Author> Authors { get; set; }
     public virtual DbSet<UserFollow> UserFollows { get; set; }
+    public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
 }

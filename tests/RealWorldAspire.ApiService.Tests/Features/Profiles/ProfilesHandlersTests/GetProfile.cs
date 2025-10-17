@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
+using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Profiles;
 using Microsoft.AspNetCore.Http;
+using MockQueryable.Moq;
 using RealWorldAspire.ApiService.Data;
 using Xunit;
 using Shouldly;
@@ -19,16 +21,15 @@ public class GetProfile
         var userManagerMock = new Mock<UserManager<AppUser>>(
             Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null
         );
-        userManagerMock.Setup(x => x.FindByNameAsync(It.IsAny<string>()))
-            .ReturnsAsync((AppUser?)null);
         var principal = new ClaimsPrincipal(); 
         userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(new AppUser());
 
-        var dbContext = new Mock<RealWorldDbContext>().Object;
+        var dbContextMock = new Mock<RealWorldDbContext>();
+        dbContextMock.Setup(x => x.Users).Returns(new List<AppUser>().BuildMockDbSet().Object);
 
         // Act
-        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContext);
+        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContextMock.Object);
 
         // Assert
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound<string>>()
@@ -49,14 +50,16 @@ public class GetProfile
         var userManagerMock = new Mock<UserManager<AppUser>>(
             Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null
         );
-        userManagerMock.Setup(x => x.FindByNameAsync("jake"))
-            .ReturnsAsync(appUser);
+        userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(new AppUser());
 
         var principal = new ClaimsPrincipal(); // Add a dummy principal
-        var dbContext = new Mock<RealWorldDbContext>().Object; // Add a dummy dbContext
+        var dbContextMock = new Mock<RealWorldDbContext>();
+        dbContextMock.Setup(x => x.Users)
+            .Returns((new List<AppUser>() {appUser}).BuildMockDbSet().Object);
 
         // Act
-        var result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContext);
+        var result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContextMock.Object);
 
         // Assert
         var okResult = result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ProfileResponse>>();

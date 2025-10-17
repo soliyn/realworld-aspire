@@ -32,4 +32,6 @@ public class AppUser : IdentityUser
 
     public List<UserFollow> Followers { get; } = [];
     public List<UserFollow> Following { get; } = [];
+    
+    public List<Article> FavoritedArticles { get; } = [];
 }
