@@ -14,7 +14,9 @@ var postgresdb = postgres
 
 var apiService = builder.AddProject<Projects.RealWorldAspire_ApiService>("apiservice")
     .WithReference(postgresdb)
+    .WaitFor(postgresdb)
     // .WithEnvironment("ASPNETCORE_URLS", "http://localhost:5030")
-    .WithHttpHealthCheck("/health");
+    .WithHttpHealthCheck("/health")
+    ;
 
 builder.Build().Run();
