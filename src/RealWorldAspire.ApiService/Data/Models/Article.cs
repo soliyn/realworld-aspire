@@ -6,13 +6,13 @@ public class Article
 {
     public int ArticleId { get; set; }
     
-    [MaxLength(50)]
+    [MaxLength(ValidationConstants.Article.SlugMaxLength)]
     public required string Slug { get; set; }
 
-    [MaxLength(50)]
+    [MaxLength(ValidationConstants.Article.TitleMaxLength)]
     public required string Title { get; set; }
     
-    [MaxLength(200)]
+    [MaxLength(ValidationConstants.Article.DescriptionMaxLength)]
     public required string Description { get; set; }
     
     public required string Body { get; set; }
@@ -21,10 +21,8 @@ public class Article
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
-    
-    public bool Favorited { get; set; }
-    
-    public int FavoritesCount { get; set; }
+
+    public List<AppUser> FavoritedByUsers { get; set; } = [];
     
     public required Author Author { get; set; }
 }

@@ -1,9 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data.Models;
 
 namespace RealWorldAspire.ApiService.Data;
 
-public class RealWorldDbContext : DbContext
+public class RealWorldDbContext : IdentityDbContext<AppUser>
 {
     public RealWorldDbContext()
     {
@@ -15,6 +17,23 @@ public class RealWorldDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        base.OnModelCreating(builder);
+
+        builder.Entity<UserFollow>()
+            .HasKey(x => x.Id);
+
+        builder.Entity<UserFollow>()
+            .HasOne(uf => uf.Follower)
+            .WithMany(u => u.Following)
+            .HasForeignKey(uf => uf.FollowerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserFollow>()
+            .HasOne(uf => uf.Following)
+            .WithMany(u => u.Followers)
+            .HasForeignKey(uf => uf.FollowingId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
         builder.Entity<Author>().HasKey(x => x.AuthorId);
 
         builder.Entity<Article>()
@@ -33,8 +52,16 @@ public class RealWorldDbContext : DbContext
                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
             )
         ;
+
+        builder.Entity<Article>()
+            .HasMany(e => e.FavoritedByUsers)
+            .WithMany(e => e.FavoritedArticles)
+            .UsingEntity<FavoriteArticle>()
+        ;
     }
 
     public virtual DbSet<Article> Articles { get; set; }
     public virtual DbSet<Author> Authors { get; set; }
+    public virtual DbSet<UserFollow> UserFollows { get; set; }
+    public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
 }

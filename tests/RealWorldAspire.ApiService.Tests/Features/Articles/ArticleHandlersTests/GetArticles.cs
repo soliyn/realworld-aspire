@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Http.HttpResults;
 using MockQueryable.Moq;
 using Moq;
 using RealWorldAspire.ApiService.Data;
@@ -6,11 +7,31 @@ using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
 using Shouldly;
 using Bogus;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace RealWorldAspire.ApiService.Tests.Features.Articles.ArticleHandlersTests;
 
 public class GetArticles
 {
+    private readonly Mock<RealWorldDbContext> _dbContextMock;
+    private readonly Mock<UserManager<AppUser>> _userManagerMock;
+    private readonly ClaimsPrincipal _principal;
+
+    public GetArticles()
+    {
+        Mock<DbSet<Article>> articleDbSetMock = GetFakeArticles().BuildMockDbSet();
+        _dbContextMock = new Mock<RealWorldDbContext>();
+        _dbContextMock.Setup(x => x.Articles).Returns(articleDbSetMock.Object);
+
+        _userManagerMock = new Mock<UserManager<AppUser>>(
+            Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
+        );
+        _principal = new ClaimsPrincipal(); 
+        _userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
+            .ReturnsAsync(new AppUser());
+    }
+
     [Fact]
     public async Task Should_Return_10_First_Articles()
     {
@@ -25,7 +46,7 @@ public class GetArticles
         };
 
         // Assert
-        var result = await ArticleHandlers.GetArticles(request, dbContextMock.Object);
+        var result = await ArticleHandlers.GetArticles(request, _principal, _userManagerMock.Object, dbContextMock.Object);
         result.ShouldBeOfType<Ok<GetArticlesResponse>>();
         var okResult = result as Ok<GetArticlesResponse>;
         okResult.ShouldNotBeNull();
@@ -52,7 +73,6 @@ public class GetArticles
             .RuleFor(a => a.TagList, f => Enumerable.Range(0, 4).Select(_ => f.Lorem.Word()).ToList())
             .RuleFor(a => a.CreatedAt, f => f.Date.Past(2, DateTime.UtcNow))
             .RuleFor(a => a.UpdatedAt, (f, a) => a.CreatedAt.AddMinutes(f.Random.Int(0, 1440)))
-            .RuleFor(a => a.FavoritesCount, f => f.Random.Int(0, 100))
             .RuleFor(a => a.Author, _ => authorFaker.Generate());
 
         // Generate 20 random articles

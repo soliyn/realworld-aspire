@@ -1,7 +1,14 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
+using RealWorldAspire.ApiService.Features.Profiles;
+using RealWorldAspire.ApiService.Features.User;
+using RealWorldAspire.ApiService.Features.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +20,11 @@ builder.Services.AddProblemDetails();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Use fully qualified names for schema IDs to avoid collisions
+    c.CustomSchemaIds(type => type.FullName);
+});
 
 builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb", configureDbContextOptions: options =>
 {
@@ -22,6 +34,80 @@ builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb", configureDbContext
     }
 });
 
+builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
+    {
+        // Configure password requirements
+        options.Password.RequiredLength = 6;
+        options.Password.RequireDigit = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = false;
+    
+        // Configure lockout settings
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+    
+        // Require unique email
+        options.User.RequireUniqueEmail = true;
+    })
+    .AddEntityFrameworkStores<RealWorldDbContext>()
+    .AddDefaultTokenProviders();
+
+var jwtSettings = builder.Configuration.GetSection("JWT");
+var secretKey = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"] ??  throw new NullReferenceException());
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues value))
+                {
+                    var authHeader = value.ToString();
+
+                    const string tokenScheme = "Token ";
+                    if (authHeader.StartsWith(tokenScheme, StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Token = authHeader.Substring(tokenScheme.Length);
+                    }
+                }
+            
+                return Task.CompletedTask;
+            },
+        
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                {
+                    context.Response.Headers.Append("Token-Expired", "true");
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddTransient<JwtTokenService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -30,10 +116,23 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwagger();                       // serves /swagger/v1/swagger.json
+    app.UseSwaggerUI(c =>
+    {
+        // point the UI at the generated document (use openapi route if you prefer)
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); 
+        // OR if you want to use Microsoft generated doc:
+        // c.SwaggerEndpoint("/openapi/v1.json", "My API (OpenAPI)");
+    });
 }
 
 var appApi = app.MapGroup("/api");
-appApi.MapArticleEndpoints();
+appApi
+    .MapArticleEndpoints()
+    .MapUserEndpoints()
+    .MapUsersEndpoints()
+    .MapProfilesEndpoints()
+    ;
 
 if (app.Environment.IsDevelopment())
 {
@@ -44,5 +143,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapDefaultEndpoints();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.Run();

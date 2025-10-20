@@ -20,7 +20,6 @@ public static class DataSeeder
                     TagList = ["beginners", "javascript", "programming", "webdev"],
                     CreatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                     UpdatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
-                    FavoritesCount = 2,
                     Author = new Author()
                     {
                         Username = "johndoe",

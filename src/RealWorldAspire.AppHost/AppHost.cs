@@ -2,7 +2,8 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var postgres = builder
     .AddPostgres("postgres")
-    .WithPgAdmin()
+    .WithLifetime(ContainerLifetime.Persistent)
+    .WithPgAdmin(c => c.WithLifetime(ContainerLifetime.Persistent))
     ;
 var postgresdb = postgres
     .WithDataVolume("postgres-data-volume")
@@ -13,7 +14,9 @@ var postgresdb = postgres
 
 var apiService = builder.AddProject<Projects.RealWorldAspire_ApiService>("apiservice")
     .WithReference(postgresdb)
+    .WaitFor(postgresdb)
     // .WithEnvironment("ASPNETCORE_URLS", "http://localhost:5030")
-    .WithHttpHealthCheck("/health");
+    .WithHttpHealthCheck("/health")
+    ;
 
 builder.Build().Run();
