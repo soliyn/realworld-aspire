@@ -37,7 +37,7 @@ ng generate --help  # See all available schematics
 
 ### Directory Structure
 
-- `src/app/pages/` - Page-level components (e.g., home, settings, new-article)
+- `src/app/features/` - Page-level components (e.g., home, settings, new-article)
 - `src/app/core/` - Core functionality shared across the app
   - `core/services/` - Singleton services (e.g., ApiService)
   - `core/constants/` - Application constants (e.g., API_ENDPOINTS)
@@ -108,6 +108,7 @@ ng generate --help  # See all available schematics
 ## Code Formatting
 
 The project uses Prettier with these settings:
+
 - Print width: 100 characters
 - Single quotes for strings
 - Angular parser for HTML files
