@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/olen/LabProjects/realworld-aspire/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
