@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TagList } from '../tag-list/tag-list';
-import { ArticleList } from '../article-list/article-list';
+import { ArticleList } from '../articles/article-list/article-list';
 
 @Component({
   selector: 'app-home',
