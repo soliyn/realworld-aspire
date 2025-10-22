@@ -5,11 +5,26 @@
         <div class="feed-toggle">
           <ul class="nav nav-pills outline-active">
             <li class="nav-item">
-              <a class="nav-link" href="">Your Feed</a>
+              <a
+                class="nav-link"
+                [class.active]="currentFeedType() === 'your-feed'"
+                href=""
+                (click)="selectYourFeed($event)">Your Feed</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="">Global Feed</a>
+              <a
+                class="nav-link"
+                [class.active]="currentFeedType() === 'global'"
+                href=""
+                (click)="selectGlobalFeed($event)">Global Feed</a>
             </li>
+            @if (currentFeedType() === 'tag' && currentTag()) {
+              <li class="nav-item">
+                <a class="nav-link active" href="">
+                  <i class="ion-pound"></i> {{ currentTag() }}
+                </a>
+              </li>
+            }
           </ul>
         </div>
 

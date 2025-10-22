@@ -268,6 +268,6 @@ describe('ArticleList', () => {
       providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
     });
 
-    expect(mockArticlesService.getArticles).toHaveBeenCalledWith();
+    expect(mockArticlesService.getArticles).toHaveBeenCalledWith(undefined);
   });
 });
