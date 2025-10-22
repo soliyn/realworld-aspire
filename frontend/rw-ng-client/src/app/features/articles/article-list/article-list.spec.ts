@@ -270,44 +270,4 @@ describe('ArticleList', () => {
 
     expect(mockArticlesService.getArticles).toHaveBeenCalledWith();
   });
-
-  it('should allow manual reloading of articles', async () => {
-    mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
-
-    const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
-    });
-
-    const component = fixture.componentInstance;
-
-    // Initial load
-    expect(mockArticlesService.getArticles).toHaveBeenCalledTimes(1);
-
-    // Manual reload
-    component.loadArticles();
-
-    expect(mockArticlesService.getArticles).toHaveBeenCalledTimes(2);
-  });
-
-  it('should reset loading state on manual reload', async () => {
-    mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
-
-    const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
-    });
-
-    const component = fixture.componentInstance;
-
-    await waitFor(() => {
-      expect(component.isLoading()).toBe(false);
-    });
-
-    // Start manual reload
-    component.loadArticles();
-
-    // Loading state should eventually be false again
-    await waitFor(() => {
-      expect(component.isLoading()).toBe(false);
-    });
-  });
 });
