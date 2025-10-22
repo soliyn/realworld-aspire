@@ -59,6 +59,8 @@ ng generate --help  # See all available schematics
 
 **Application Bootstrap:** The app is bootstrapped in `src/main.ts` and configured via `src/app/app.config.ts`, which sets up providers for routing, HttpClient, zone change detection, and error listeners.
 
+**Unit Tests:** Use Jest and Angular Testing Library.
+
 ## TypeScript Best Practices
 
 - Use strict type checking (enabled in tsconfig.json)
