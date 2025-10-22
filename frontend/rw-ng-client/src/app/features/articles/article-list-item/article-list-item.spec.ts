@@ -146,7 +146,7 @@ describe('ArticleListItem', () => {
   });
 
   it('should emit favoriteToggle event when favorite button is clicked', async () => {
-    const favoriteToggleSpy = jasmine.createSpy('favoriteToggle');
+    const favoriteToggleSpy = jest.fn();
 
     await render(ArticleListItem, {
       inputs: {
@@ -164,7 +164,7 @@ describe('ArticleListItem', () => {
   });
 
   it('should emit favoriteToggle event with correct article data', async () => {
-    const favoriteToggleSpy = jasmine.createSpy('favoriteToggle');
+    const favoriteToggleSpy = jest.fn();
 
     await render(ArticleListItem, {
       inputs: {

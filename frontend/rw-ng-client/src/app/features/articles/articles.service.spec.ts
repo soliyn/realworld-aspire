@@ -14,7 +14,7 @@ import { CommentResponse, CommentsResponse, NewComment } from '../../core/models
 
 describe('ArticlesService', () => {
   let service: ArticlesService;
-  let apiService: jasmine.SpyObj<ApiService>;
+  let apiService: jest.Mocked<ApiService>;
 
   const mockArticle = {
     slug: 'test-article',
@@ -65,14 +65,19 @@ describe('ArticlesService', () => {
   };
 
   beforeEach(() => {
-    const apiServiceSpy = jasmine.createSpyObj('ApiService', ['get', 'post', 'put', 'delete']);
+    const apiServiceMock = {
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+    };
 
     TestBed.configureTestingModule({
-      providers: [ArticlesService, { provide: ApiService, useValue: apiServiceSpy }],
+      providers: [ArticlesService, { provide: ApiService, useValue: apiServiceMock }],
     });
 
     service = TestBed.inject(ArticlesService);
-    apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+    apiService = TestBed.inject(ApiService) as jest.Mocked<ApiService>;
   });
 
   it('should be created', () => {
@@ -81,7 +86,7 @@ describe('ArticlesService', () => {
 
   describe('getArticles', () => {
     it('should call apiService.get with correct endpoint and no params', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles().subscribe((response) => {
         expect(response).toEqual(mockArticlesResponse);
@@ -89,66 +94,66 @@ describe('ArticlesService', () => {
 
       expect(apiService.get).toHaveBeenCalledWith(
         API_ENDPOINTS.articles.base,
-        jasmine.any(HttpParams)
+        expect.any(HttpParams)
       );
     });
 
     it('should call apiService.get with tag parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ tag: 'angular' }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('tag')).toBe('angular');
     });
 
     it('should call apiService.get with author parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ author: 'testuser' }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('author')).toBe('testuser');
     });
 
     it('should call apiService.get with favorited parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ favorited: 'testuser' }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('favorited')).toBe('testuser');
     });
 
     it('should call apiService.get with limit parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ limit: 10 }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('limit')).toBe('10');
     });
 
     it('should call apiService.get with offset parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ offset: 20 }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('offset')).toBe('20');
     });
 
     it('should call apiService.get with multiple parameters', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getArticles({ tag: 'angular', limit: 10, offset: 20 }).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('tag')).toBe('angular');
       expect(params.get('limit')).toBe('10');
@@ -158,7 +163,7 @@ describe('ArticlesService', () => {
 
   describe('getFeed', () => {
     it('should call apiService.get with correct endpoint and no params', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getFeed().subscribe((response) => {
         expect(response).toEqual(mockArticlesResponse);
@@ -166,36 +171,36 @@ describe('ArticlesService', () => {
 
       expect(apiService.get).toHaveBeenCalledWith(
         API_ENDPOINTS.articles.feed,
-        jasmine.any(HttpParams)
+        expect.any(HttpParams)
       );
     });
 
     it('should call apiService.get with limit parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getFeed(10).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('limit')).toBe('10');
     });
 
     it('should call apiService.get with offset parameter', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getFeed(undefined, 20).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('offset')).toBe('20');
     });
 
     it('should call apiService.get with both limit and offset parameters', () => {
-      apiService.get.and.returnValue(of(mockArticlesResponse));
+      apiService.get.mockReturnValue(of(mockArticlesResponse));
 
       service.getFeed(10, 20).subscribe();
 
-      const callArgs = apiService.get.calls.mostRecent().args;
+      const callArgs = apiService.get.mock.calls[apiService.get.mock.calls.length - 1];
       const params = callArgs[1] as HttpParams;
       expect(params.get('limit')).toBe('10');
       expect(params.get('offset')).toBe('20');
@@ -204,7 +209,7 @@ describe('ArticlesService', () => {
 
   describe('getArticle', () => {
     it('should call apiService.get with correct endpoint', () => {
-      apiService.get.and.returnValue(of(mockArticleResponse));
+      apiService.get.mockReturnValue(of(mockArticleResponse));
 
       service.getArticle('test-article').subscribe((response) => {
         expect(response).toEqual(mockArticleResponse);
@@ -223,7 +228,7 @@ describe('ArticlesService', () => {
         tagList: ['test'],
       };
 
-      apiService.post.and.returnValue(of(mockArticleResponse));
+      apiService.post.mockReturnValue(of(mockArticleResponse));
 
       service.createArticle(newArticle).subscribe((response) => {
         expect(response).toEqual(mockArticleResponse);
@@ -243,7 +248,7 @@ describe('ArticlesService', () => {
         body: 'Updated body',
       };
 
-      apiService.put.and.returnValue(of(mockArticleResponse));
+      apiService.put.mockReturnValue(of(mockArticleResponse));
 
       service.updateArticle('test-article', updateArticle).subscribe((response) => {
         expect(response).toEqual(mockArticleResponse);
@@ -257,7 +262,7 @@ describe('ArticlesService', () => {
 
   describe('deleteArticle', () => {
     it('should call apiService.delete with correct endpoint', () => {
-      apiService.delete.and.returnValue(of(undefined));
+      apiService.delete.mockReturnValue(of(undefined));
 
       service.deleteArticle('test-article').subscribe();
 
@@ -267,7 +272,7 @@ describe('ArticlesService', () => {
 
   describe('favoriteArticle', () => {
     it('should call apiService.post with correct endpoint and empty body', () => {
-      apiService.post.and.returnValue(of(mockArticleResponse));
+      apiService.post.mockReturnValue(of(mockArticleResponse));
 
       service.favoriteArticle('test-article').subscribe((response) => {
         expect(response).toEqual(mockArticleResponse);
@@ -282,7 +287,7 @@ describe('ArticlesService', () => {
 
   describe('unfavoriteArticle', () => {
     it('should call apiService.delete with correct endpoint', () => {
-      apiService.delete.and.returnValue(of(mockArticleResponse));
+      apiService.delete.mockReturnValue(of(mockArticleResponse));
 
       service.unfavoriteArticle('test-article').subscribe((response) => {
         expect(response).toEqual(mockArticleResponse);
@@ -296,7 +301,7 @@ describe('ArticlesService', () => {
 
   describe('getComments', () => {
     it('should call apiService.get with correct endpoint', () => {
-      apiService.get.and.returnValue(of(mockCommentsResponse));
+      apiService.get.mockReturnValue(of(mockCommentsResponse));
 
       service.getComments('test-article').subscribe((response) => {
         expect(response).toEqual(mockCommentsResponse);
@@ -312,7 +317,7 @@ describe('ArticlesService', () => {
         body: 'New comment',
       };
 
-      apiService.post.and.returnValue(of(mockCommentResponse));
+      apiService.post.mockReturnValue(of(mockCommentResponse));
 
       service.addComment('test-article', newComment).subscribe((response) => {
         expect(response).toEqual(mockCommentResponse);
@@ -327,7 +332,7 @@ describe('ArticlesService', () => {
 
   describe('deleteComment', () => {
     it('should call apiService.delete with correct endpoint', () => {
-      apiService.delete.and.returnValue(of(undefined));
+      apiService.delete.mockReturnValue(of(undefined));
 
       service.deleteComment('test-article', 1).subscribe();
 
