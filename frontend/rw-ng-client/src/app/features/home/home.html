@@ -1,0 +1,50 @@
+<div class="home-page">
+  <div class="container page">
+    <div class="row">
+      <div class="col-md-9">
+        <div class="feed-toggle">
+          <ul class="nav nav-pills outline-active">
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="currentFeedType() === 'your-feed'"
+                href=""
+                (click)="selectYourFeed($event)">Your Feed</a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                [class.active]="currentFeedType() === 'global'"
+                href=""
+                (click)="selectGlobalFeed($event)">Global Feed</a>
+            </li>
+            @if (currentFeedType() === 'tag' && currentTag()) {
+              <li class="nav-item">
+                <a class="nav-link active" href="">
+                  <i class="ion-pound"></i> {{ currentTag() }}
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <app-article-list></app-article-list>
+
+        <ul class="pagination">
+          <li class="page-item active">
+            <a class="page-link" href="">1</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="">2</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-3">
+        <div class="sidebar">
+          <app-tag-list></app-tag-list>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,91 @@
+<div class="profile-page">
+  @if (isLoadingProfile()) {
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    </div>
+  } @else if (profileError()) {
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 text-center">
+          <p class="text-danger">{{ profileError() }}</p>
+        </div>
+      </div>
+    </div>
+  } @else if (profile(); as profileData) {
+    <div class="user-info">
+      <div class="container">
+        <div class="row">
+          <div class="col-xs-12 col-md-10 offset-md-1">
+            <img [src]="profileData.image" [alt]="profileData.username" class="user-img" />
+            <h4>{{ profileData.username }}</h4>
+            <p>{{ profileData.bio || 'No bio available.' }}</p>
+            @if (isOwnProfile()) {
+              <button class="btn btn-sm btn-outline-secondary action-btn" (click)="editProfile($event)">
+                <i class="ion-gear-a"></i>
+                &nbsp; Edit Profile Settings
+              </button>
+            } @else {
+              <button
+                class="btn btn-sm action-btn"
+                [class.btn-outline-secondary]="!profileData.following"
+                [class.btn-secondary]="profileData.following"
+                (click)="toggleFollow($event)">
+                <i class="ion-plus-round"></i>
+                &nbsp; {{ profileData.following ? 'Unfollow' : 'Follow' }} {{ profileData.username }}
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-md-10 offset-md-1">
+          <div class="articles-toggle">
+            <ul class="nav nav-pills outline-active">
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="currentTab() === 'my-articles'"
+                  href="#"
+                  (click)="selectTab($event, 'my-articles')">
+                  My Articles
+                </a>
+              </li>
+              <li class="nav-item">
+                <a
+                  class="nav-link"
+                  [class.active]="currentTab() === 'favorited-articles'"
+                  href="#"
+                  (click)="selectTab($event, 'favorited-articles')">
+                  Favorited Articles
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          @if (isLoadingArticles()) {
+            <div class="text-center">
+              <p>Loading articles...</p>
+            </div>
+          } @else if (articles().length === 0) {
+            <div class="article-preview">
+              <p>No articles are here... yet.</p>
+            </div>
+          } @else {
+            @for (article of articles(); track article.slug) {
+              <app-article-list-item
+                [article]="article"
+                (favoriteToggle)="onFavoriteToggle($event)" />
+            }
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

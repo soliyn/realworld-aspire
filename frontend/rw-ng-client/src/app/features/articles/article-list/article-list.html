@@ -1,0 +1,12 @@
+@if (isLoading()) {
+  <div class="article-preview">Loading articles...</div>
+} @else if (articles().length === 0) {
+  <div class="article-preview">No articles are here... yet.</div>
+} @else {
+  @for (article of articles(); track article.slug) {
+    <app-article-list-item
+      [article]="article"
+      (favoriteToggle)="onFavoriteToggle($event)"
+    ></app-article-list-item>
+  }
+}

@@ -1,0 +1,33 @@
+<div class="article-preview">
+  <div class="article-meta">
+    <a [href]="'/profile/' + article().author.username">
+      <img [src]="article().author.image" [alt]="article().author.username" />
+    </a>
+    <div class="info">
+      <a [href]="'/profile/' + article().author.username" class="author">
+        {{ article().author.username }}
+      </a>
+      <span class="date">{{ article().createdAt | date: 'longDate' }}</span>
+    </div>
+    <button
+      class="btn btn-sm pull-xs-right"
+      [class.btn-outline-primary]="!article().favorited"
+      [class.btn-primary]="article().favorited"
+      (click)="onFavoriteClick()"
+    >
+      <i class="ion-heart"></i> {{ article().favoritesCount }}
+    </button>
+  </div>
+  <a [href]="'/article/' + article().slug" class="preview-link">
+    <h1>{{ article().title }}</h1>
+    <p>{{ article().description }}</p>
+    <span>Read more...</span>
+    @if (article().tagList.length > 0) {
+      <ul class="tag-list">
+        @for (tag of article().tagList; track tag) {
+          <li class="tag-default tag-pill tag-outline">{{ tag }}</li>
+        }
+      </ul>
+    }
+  </a>
+</div>
