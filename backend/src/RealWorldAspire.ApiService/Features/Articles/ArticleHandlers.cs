@@ -24,7 +24,7 @@ public static class ArticleHandlers
                 Title = x.Title,
                 Description = x.Description,
                 Body = x.Body,
-                TagList = x.TagList.ToList(),
+                TagList = x.Tags.Select(t => t.Name).ToList(),
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
                 Favorited = user != null && x.FavoritedByUsers.Any(u => u.Id == user.Id),
@@ -65,7 +65,7 @@ public static class ArticleHandlers
 
         if (request.Tag != null)
         {
-            query = query.Where(x => x.TagList.Contains(request.Tag));
+            query = query.Where(x => x.Tags.Any(t => t.Name == request.Tag));
         }
 
         if (request.Author != null)
@@ -86,7 +86,7 @@ public static class ArticleHandlers
                 Slug = x.Slug,
                 Title = x.Title,
                 Description = x.Description,
-                TagList = x.TagList.ToList(),
+                TagList = x.Tags.Select(t => t.Name).ToList(),
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
                 Favorited = user != null && x.FavoritedByUsers.Any(u => u.Id == user.Id),
@@ -125,7 +125,7 @@ public static class ArticleHandlers
                 Title = x.Title,
                 Description = x.Description,
                 Body = x.Body,
-                TagList = x.TagList.ToList(),
+                TagList = x.Tags.Select(t => t.Name).ToList(),
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
                 FavoritedCount = x.FavoritedByUsers.Count,
@@ -196,7 +196,7 @@ public static class ArticleHandlers
                 Title = x.Title,
                 Description = x.Description,
                 Body = x.Body,
-                TagList = x.TagList.ToList(),
+                TagList = x.Tags.Select(t => t.Name).ToList(),
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
                 FavoritedCount = x.FavoritedByUsers.Count,

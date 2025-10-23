@@ -17,7 +17,7 @@ public class Article
     
     public required string Body { get; set; }
     
-    public required List<string> TagList { get; set; }
+    public required List<Tag> Tags { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

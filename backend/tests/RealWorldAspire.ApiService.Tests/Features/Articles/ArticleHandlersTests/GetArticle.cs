@@ -80,10 +80,10 @@ public class GetArticle
                 Title = "How to Learn JavaScript Efficiently",
                 Description = "A comprehensive guide to mastering JavaScript from beginner to advanced level",
                 Body = "Learning JavaScript can be overwhelming with so many resources available. Here's a structured approach that has helped thousands of developers master this essential language.\n\n## Start with the Fundamentals\n\nBefore diving into frameworks, master the core concepts: variables, functions, objects, and arrays. Understanding these building blocks is crucial for writing clean, maintainable code.\n\n## Practice with Real Projects\n\nThe best way to learn is by building actual applications. Start with simple projects like a todo list or calculator, then gradually increase complexity.\n\n## Join the Community\n\nEngage with other developers through forums, Discord servers, and local meetups. The JavaScript community is incredibly welcoming and helpful.",
-                TagList = ["beginners", "javascript", "programming", "webdev"],
                 CreatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                 FavoritedByUsers = [],
+                Tags = [],
                 Author = new Author()
                 {
                     Username = "johndoe",
@@ -98,10 +98,10 @@ public class GetArticle
                 Title = "Advanced C# Tips",
                 Description = "Take your C# skills to the next level with these advanced tips and tricks.",
                 Body = "C# offers many advanced features for experienced developers.\n\n## Use LINQ Effectively\n\nLINQ can simplify complex data queries.\n\n## Master Async Programming\n\nAsync/await helps you write scalable applications.\n\n## Explore Span<T>\n\nSpan<T> enables high-performance memory access.",
-                TagList = ["csharp", "dotnet", "advanced", "tips"],
                 CreatedAt = new DateTime(2025, 10, 10, 12, 0, 0, DateTimeKind.Utc),
                 UpdatedAt = new DateTime(2025, 10, 10, 12, 30, 0, DateTimeKind.Utc),
                 FavoritedByUsers = [],
+                Tags = [],
                 Author = new Author()
                 {
                     Username = "janedoe",

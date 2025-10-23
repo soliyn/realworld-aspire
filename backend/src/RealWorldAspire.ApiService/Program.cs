@@ -7,6 +7,7 @@ using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
 using RealWorldAspire.ApiService.Features.Profiles;
+using RealWorldAspire.ApiService.Features.Tags;
 using RealWorldAspire.ApiService.Features.User;
 using RealWorldAspire.ApiService.Features.Users;
 
@@ -106,6 +107,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Add CORS for frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddTransient<JwtTokenService>();
 
 var app = builder.Build();
@@ -132,6 +145,7 @@ appApi
     .MapUserEndpoints()
     .MapUsersEndpoints()
     .MapProfilesEndpoints()
+    .MapTagsEndpoints()
     ;
 
 if (app.Environment.IsDevelopment())
@@ -143,6 +157,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapDefaultEndpoints();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

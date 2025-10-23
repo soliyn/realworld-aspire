@@ -58,10 +58,16 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .WithMany(e => e.FavoritedArticles)
             .UsingEntity<FavoriteArticle>()
         ;
+
+        builder.Entity<Article>()
+            .HasMany(e => e.Tags)
+            .WithMany(e => e.Articles)
+        ;
     }
 
     public virtual DbSet<Article> Articles { get; set; }
     public virtual DbSet<Author> Authors { get; set; }
     public virtual DbSet<UserFollow> UserFollows { get; set; }
     public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
+    public virtual DbSet<Tag> Tags { get; set; }
 }

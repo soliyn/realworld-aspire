@@ -70,7 +70,6 @@ public class GetArticles
             .RuleFor(a => a.Title, f => f.Lorem.Sentence(5, 3))
             .RuleFor(a => a.Description, f => f.Lorem.Sentence(10, 5))
             .RuleFor(a => a.Body, f => f.Lorem.Paragraphs(3))
-            .RuleFor(a => a.TagList, f => Enumerable.Range(0, 4).Select(_ => f.Lorem.Word()).ToList())
             .RuleFor(a => a.CreatedAt, f => f.Date.Past(2, DateTime.UtcNow))
             .RuleFor(a => a.UpdatedAt, (f, a) => a.CreatedAt.AddMinutes(f.Random.Int(0, 1440)))
             .RuleFor(a => a.Author, _ => authorFaker.Generate());
