@@ -21,15 +21,35 @@
     <a class="navbar-brand" href="/">conduit</a>
     <ul class="nav navbar-nav pull-xs-right">
       <li class="nav-item">
-        <!-- Add "active" class when you're on that page" -->
-        <a class="nav-link active" href="/">Home</a>
+        <a
+          class="nav-link"
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Home</a
+        >
+      </li>
+      @if (authService.isAuthenticated()) {
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/editor"> <i class="ion-compose"></i>&nbsp;New Article </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/login">Sign in</a>
+        <a class="nav-link" routerLink="/settings"> <i class="ion-gear-a"></i>&nbsp;Settings </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/register">Sign up</a>
+        <a class="nav-link" [routerLink]="['/profile', authService.currentUserValue?.username]">
+          <img src="" class="user-pic" />
+          {{ authService.currentUserValue?.username }}
+        </a>
       </li>
+      } @else {
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/login" routerLinkActive="active">Sign in</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/register" routerLinkActive="active">Sign up</a>
+      </li>
+      }
     </ul>
   </div>
 </nav>
