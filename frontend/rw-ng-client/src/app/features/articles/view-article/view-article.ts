@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, tap } from 'rxjs';
+import { marked } from 'marked';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Article } from '../../../core/models/article.model';
@@ -56,6 +57,15 @@ export class ViewArticle implements OnInit {
     const user = this.currentUser();
     return user && comment.author.username === user.username;
   };
+
+  // Parse markdown body to HTML
+  articleBodyHtml = computed(() => {
+    const article = this.article();
+    if (!article || !article.body) {
+      return '';
+    }
+    return marked.parse(article.body, { async: false }) as string;
+  });
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');

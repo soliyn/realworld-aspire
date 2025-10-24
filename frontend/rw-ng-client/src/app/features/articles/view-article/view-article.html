@@ -89,7 +89,7 @@
     <div class="container page">
       <div class="row article-content">
         <div class="col-md-12">
-          <div [innerHTML]="article.body"></div>
+          <div [innerHTML]="articleBodyHtml()"></div>
           @if (article.tagList.length > 0) {
             <ul class="tag-list">
               @for (tag of article.tagList; track tag) {
