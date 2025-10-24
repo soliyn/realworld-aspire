@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
+using RealWorldAspire.ApiService.Extensions;
 using Slugify;
 
 namespace RealWorldAspire.ApiService.Features.Articles;
@@ -113,23 +114,110 @@ public static class ArticleHandlers
         UserManager<AppUser> userManager,
         RealWorldDbContext dbContext)
     {
-        var user = await userManager.GetUserAsync(principal);
-        if (user == null)
+        var user = await userManager.GetUserOrThrow(principal);
+
+        var tags = await GetOrCreateTags(request.Article.TagList, dbContext);
+
+        var now = DateTime.UtcNow;
+        var article = new Article
         {
-            return TypedResults.Unauthorized();
+            Slug = new SlugHelper().GenerateSlug(request.Article.Title),
+            Title = request.Article.Title,
+            Description = request.Article.Description,
+            Body = request.Article.Body,
+            Tags = tags,
+            CreatedAt = now,
+            UpdatedAt = now,
+            Author = user,
+        };
+
+        await dbContext.Articles.AddAsync(article);
+        await dbContext.SaveChangesAsync();
+
+        return TypedResults.Ok(
+            new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, new SlugHelper().GenerateSlug(request.Article.Title)) }
+        );
+    }
+
+    public static async Task<IResult> UpdateArticle(
+        string slug,
+        CreateArticleRequest request,
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        RealWorldDbContext dbContext)
+    {
+        var user = await userManager.GetUserOrThrow(principal);
+
+        var article = await dbContext.Articles
+            .Include(a => a.Author)
+            .Include(a => a.Tags)
+            .FirstOrDefaultAsync(x => x.Slug == slug);
+
+        return article switch
+        {
+            null => TypedResults.NotFound(),
+            _ when article.Author.Id != user.Id => TypedResults.Forbid(),
+            _ => await Update(),
+        };
+
+        async Task<IResult> Update()
+        {
+            await UpdateAndSaveArticle();
+
+            return TypedResults.Ok(
+                new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, slug) }
+            );
         }
 
-        var slugHelper = new SlugHelper();
-        var slug = slugHelper.GenerateSlug(request.Article.Title);
+        async Task UpdateAndSaveArticle()
+        {
+            article.Title = request.Article.Title;
+            article.Description = request.Article.Description;
+            article.Body = request.Article.Body;
+            article.Tags = await GetOrCreateTags(request.Article.TagList, dbContext);
+            article.UpdatedAt = DateTime.UtcNow;
 
-        // Get all existing tags in a single query
-        var tagNames = request.Article.TagList;
+            await dbContext.SaveChangesAsync();
+        }
+    }
+    
+    private static async Task<GetArticleResponse.ArticleModel> CreateArticleResponse(
+        RealWorldDbContext dbContext, 
+        AppUser user,
+        string slug
+    ) =>
+        await dbContext.Articles
+            .Where(x => x.Slug == slug)
+            .Select(x => new GetArticleResponse.ArticleModel
+            {
+                Slug = x.Slug,
+                Title = x.Title,
+                Description = x.Description,
+                Body = x.Body,
+                TagList = x.Tags.Select(t => t.Name).ToList(),
+                CreatedAt = x.CreatedAt,
+                UpdatedAt = x.UpdatedAt,
+                Favorited = x.FavoritedByUsers.Any(u => u.Id == user.Id),
+                FavoritesCount = x.FavoritedByUsers.Count,
+                Author = new GetArticleResponse.ArticleModel.AuthorDto
+                {
+                    Username = x.Author.UserName,
+                    Bio = x.Author.Bio,
+                    Image = x.Author.Image,
+                    Following = x.Author.Followers.Any(uf => uf.FollowerId == user.Id),
+                },
+            })
+            .FirstAsync();
+
+
+    private static async Task<List<Tag>> GetOrCreateTags(List<string> tagNames, RealWorldDbContext dbContext)
+    {
         var existingTags = await dbContext.Tags
             .Where(t => tagNames.Contains(t.Name))
             .ToListAsync();
 
         var tags = new List<Tag>();
-        foreach (var tagName in request.Article.TagList)
+        foreach (var tagName in tagNames)
         {
             var existingTag = existingTags.FirstOrDefault(t => t.Name == tagName);
 
@@ -148,44 +236,7 @@ public static class ArticleHandlers
             }
         }
 
-        var now = DateTime.UtcNow;
-        var article = new Article
-        {
-            Slug = slug,
-            Title = request.Article.Title,
-            Description = request.Article.Description,
-            Body = request.Article.Body,
-            Tags = tags,
-            CreatedAt = now,
-            UpdatedAt = now,
-            Author = user,
-        };
-
-        await dbContext.Articles.AddAsync(article);
-        await dbContext.SaveChangesAsync();
-
-        return TypedResults.Ok(new GetArticleResponse
-        {
-            Article = new GetArticleResponse.ArticleModel
-            {
-                Slug = article.Slug,
-                Title = article.Title,
-                Description = article.Description,
-                Body = article.Body,
-                TagList = article.Tags.Select(t => t.Name).ToList(),
-                CreatedAt = article.CreatedAt,
-                UpdatedAt = article.UpdatedAt,
-                Favorited = false,
-                FavoritesCount = 0,
-                Author = new GetArticleResponse.ArticleModel.AuthorDto
-                {
-                    Username = article.Author.UserName,
-                    Bio = article.Author.Bio,
-                    Image = article.Author.Image,
-                    Following = article.Author.FavoritedArticles.Contains(article),
-                }
-            }
-        });
+        return tags;
     }
 
     public static async Task<IResult> FavoriteArticle(
