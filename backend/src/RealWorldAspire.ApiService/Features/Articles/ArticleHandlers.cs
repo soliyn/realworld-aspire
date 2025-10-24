@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
+using Slugify;
 
 namespace RealWorldAspire.ApiService.Features.Articles;
 
@@ -31,10 +32,10 @@ public static class ArticleHandlers
                 FavoritesCount = x.FavoritedByUsers.Count,
                 Author = new GetArticleResponse.ArticleModel.AuthorDto
                 {
-                    Username = x.Author.Username,
+                    Username = x.Author.UserName,
                     Bio = x.Author.Bio,
                     Image = x.Author.Image,
-                    Following = x.Author.Following,
+                    Following = user != null && x.Author.Followers.Any(uf => uf.FollowerId == user.Id),
                 }
             })
             .FirstOrDefaultAsync(x => x.Slug == slug);
@@ -70,7 +71,7 @@ public static class ArticleHandlers
 
         if (request.Author != null)
         {
-            query = query.Where(x => x.Author.Username == request.Author);
+            query = query.Where(x => x.Author.UserName == request.Author);
         }
 
         if (request.Favorited != null)
@@ -79,6 +80,8 @@ public static class ArticleHandlers
         }
 
         var articles = await query
+            .Include(x => x.Author)
+            .OrderByDescending(x => x.CreatedAt)
             .Skip(offset)
             .Take(limit)
             .Select(x => new GetArticlesResponse.Article()
@@ -93,15 +96,96 @@ public static class ArticleHandlers
                 FavoritesCount = x.FavoritedByUsers.Count,
                 Author = new GetArticlesResponse.Article.AuthorDto
                 {
-                    Username = x.Author.Username,
+                    Username = x.Author.UserName,
                     Bio = x.Author.Bio,
                     Image = x.Author.Image,
-                    Following = x.Author.Following,
+                    Following = user != null && x.Author.Followers.Any(u => u.FollowerId == user.Id),
                 }
             })
             .ToListAsync();
 
         return TypedResults.Ok(new GetArticlesResponse { Articles = articles, ArticlesCount = articles.Count });
+    }
+
+    public static async Task<IResult> CreateArticle(
+        CreateArticleRequest request,
+        ClaimsPrincipal principal,
+        UserManager<AppUser> userManager,
+        RealWorldDbContext dbContext)
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user == null)
+        {
+            return TypedResults.Unauthorized();
+        }
+
+        var slugHelper = new SlugHelper();
+        var slug = slugHelper.GenerateSlug(request.Article.Title);
+
+        // Get all existing tags in a single query
+        var tagNames = request.Article.TagList;
+        var existingTags = await dbContext.Tags
+            .Where(t => tagNames.Contains(t.Name))
+            .ToListAsync();
+
+        var tags = new List<Tag>();
+        foreach (var tagName in request.Article.TagList)
+        {
+            var existingTag = existingTags.FirstOrDefault(t => t.Name == tagName);
+
+            if (existingTag != null)
+            {
+                tags.Add(existingTag);
+            }
+            else
+            {
+                var newTag = new Tag
+                {
+                    Name = tagName,
+                    Articles = [],
+                };
+                tags.Add(newTag);
+            }
+        }
+
+        var now = DateTime.UtcNow;
+        var article = new Article
+        {
+            Slug = slug,
+            Title = request.Article.Title,
+            Description = request.Article.Description,
+            Body = request.Article.Body,
+            Tags = tags,
+            CreatedAt = now,
+            UpdatedAt = now,
+            Author = user,
+        };
+
+        await dbContext.Articles.AddAsync(article);
+        await dbContext.SaveChangesAsync();
+
+        return TypedResults.Ok(new GetArticleResponse
+        {
+            Article = new GetArticleResponse.ArticleModel
+            {
+                Slug = article.Slug,
+                Title = article.Title,
+                Description = article.Description,
+                Body = article.Body,
+                TagList = article.Tags.Select(t => t.Name).ToList(),
+                CreatedAt = article.CreatedAt,
+                UpdatedAt = article.UpdatedAt,
+                Favorited = false,
+                FavoritesCount = 0,
+                Author = new GetArticleResponse.ArticleModel.AuthorDto
+                {
+                    Username = article.Author.UserName,
+                    Bio = article.Author.Bio,
+                    Image = article.Author.Image,
+                    Following = article.Author.FavoritedArticles.Contains(article),
+                }
+            }
+        });
     }
 
     public static async Task<IResult> FavoriteArticle(
@@ -165,10 +249,10 @@ public static class ArticleHandlers
                 FavoritesCount = article.FavoritedCount + (article.IsFavorited ? 0 : 1),
                 Author = new GetArticleResponse.ArticleModel.AuthorDto
                 {
-                    Username = article.Author.Username,
+                    Username = article.Author.UserName,
                     Bio = article.Author.Bio,
                     Image = article.Author.Image,
-                    Following = article.Author.Following,
+                    Following = true,
                 }
             }
         });
@@ -236,10 +320,10 @@ public static class ArticleHandlers
                 FavoritesCount = article.FavoritedCount - (article.IsFavorited ? 1 : 0),
                 Author = new GetArticleResponse.ArticleModel.AuthorDto
                 {
-                    Username = article.Author.Username,
+                    Username = article.Author.UserName,
                     Bio = article.Author.Bio,
                     Image = article.Author.Image,
-                    Following = article.Author.Following,
+                    Following = false,
                 }
             }
         });

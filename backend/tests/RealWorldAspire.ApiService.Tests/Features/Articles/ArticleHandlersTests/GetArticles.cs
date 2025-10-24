@@ -59,22 +59,23 @@ public class GetArticles
 
     private List<Article> GetFakeArticles()
     {
-        var authorFaker = new Faker<Author>()
-            .RuleFor(a => a.Username, f => f.Internet.UserName())
-            .RuleFor(a => a.Bio, f => f.Lorem.Sentence(10))
-            .RuleFor(a => a.Image, f => f.Internet.Avatar())
-            .RuleFor(a => a.Following, f => f.Random.Bool());
-
-        var articleFaker = new Faker<Article>()
-            .RuleFor(a => a.Slug, f => f.Lorem.Slug())
-            .RuleFor(a => a.Title, f => f.Lorem.Sentence(5, 3))
-            .RuleFor(a => a.Description, f => f.Lorem.Sentence(10, 5))
-            .RuleFor(a => a.Body, f => f.Lorem.Paragraphs(3))
-            .RuleFor(a => a.CreatedAt, f => f.Date.Past(2, DateTime.UtcNow))
-            .RuleFor(a => a.UpdatedAt, (f, a) => a.CreatedAt.AddMinutes(f.Random.Int(0, 1440)))
-            .RuleFor(a => a.Author, _ => authorFaker.Generate());
-
-        // Generate 20 random articles
-        return articleFaker.Generate(20);
+        // var authorFaker = new Faker<Author>()
+        //     .RuleFor(a => a.Username, f => f.Internet.UserName())
+        //     .RuleFor(a => a.Bio, f => f.Lorem.Sentence(10))
+        //     .RuleFor(a => a.Image, f => f.Internet.Avatar())
+        //     .RuleFor(a => a.Following, f => f.Random.Bool());
+        //
+        // var articleFaker = new Faker<Article>()
+        //     .RuleFor(a => a.Slug, f => f.Lorem.Slug())
+        //     .RuleFor(a => a.Title, f => f.Lorem.Sentence(5, 3))
+        //     .RuleFor(a => a.Description, f => f.Lorem.Sentence(10, 5))
+        //     .RuleFor(a => a.Body, f => f.Lorem.Paragraphs(3))
+        //     .RuleFor(a => a.CreatedAt, f => f.Date.Past(2, DateTime.UtcNow))
+        //     .RuleFor(a => a.UpdatedAt, (f, a) => a.CreatedAt.AddMinutes(f.Random.Int(0, 1440)))
+        //     .RuleFor(a => a.Author, _ => authorFaker.Generate());
+        //
+        // // Generate 20 random articles
+        // return articleFaker.Generate(20);
+        return [];
     }
 }

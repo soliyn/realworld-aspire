@@ -1,0 +1,256 @@
+@if (isLoadingArticle()) {
+  <div class="article-page">
+    <div class="container page">
+      <div class="row">
+        <div class="col-md-12">
+          <p>Loading article...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else if (articleError()) {
+  <div class="article-page">
+    <div class="container page">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="alert alert-danger">{{ articleError() }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+} @else if (article(); as article) {
+  <div class="article-page">
+    <div class="banner">
+      <div class="container">
+        <h1>{{ article.title }}</h1>
+
+        <div class="article-meta">
+          <a [routerLink]="['/profile', article.author.username]">
+            <img [src]="article.author.image" [alt]="article.author.username" />
+          </a>
+          <div class="info">
+            <a [routerLink]="['/profile', article.author.username]" class="author">
+              {{ article.author.username }}
+            </a>
+            <span class="date">{{ article.createdAt | date: 'longDate' }}</span>
+          </div>
+
+          @if (canModifyArticle()) {
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onEditArticle()"
+              [disabled]="isDeletingArticle()"
+            >
+              <i class="ion-edit"></i> Edit Article
+            </button>
+            &nbsp;
+            <button
+              class="btn btn-sm btn-outline-danger"
+              (click)="onDeleteArticle()"
+              [disabled]="isDeletingArticle()"
+            >
+              <i class="ion-trash-a"></i> Delete Article
+            </button>
+          } @else {
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onToggleFollow()"
+              [disabled]="!isAuthenticated()"
+            >
+              <i class="ion-plus-round"></i>
+              &nbsp;
+              @if (article.author.following) {
+                Unfollow {{ article.author.username }}
+              } @else {
+                Follow {{ article.author.username }}
+              }
+            </button>
+            &nbsp;&nbsp;
+            <button
+              class="btn btn-sm"
+              [class.btn-outline-primary]="!article.favorited"
+              [class.btn-primary]="article.favorited"
+              (click)="onToggleFavorite()"
+            >
+              <i class="ion-heart"></i>
+              &nbsp;
+              @if (article.favorited) {
+                Unfavorite Article
+              } @else {
+                Favorite Article
+              }
+              <span class="counter">({{ article.favoritesCount }})</span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="container page">
+      <div class="row article-content">
+        <div class="col-md-12">
+          <div [innerHTML]="article.body"></div>
+          @if (article.tagList.length > 0) {
+            <ul class="tag-list">
+              @for (tag of article.tagList; track tag) {
+                <li class="tag-default tag-pill tag-outline">{{ tag }}</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <hr />
+
+      <div class="article-actions">
+        <div class="article-meta">
+          <a [routerLink]="['/profile', article.author.username]">
+            <img [src]="article.author.image" [alt]="article.author.username" />
+          </a>
+          <div class="info">
+            <a [routerLink]="['/profile', article.author.username]" class="author">
+              {{ article.author.username }}
+            </a>
+            <span class="date">{{ article.createdAt | date: 'longDate' }}</span>
+          </div>
+
+          @if (canModifyArticle()) {
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onEditArticle()"
+              [disabled]="isDeletingArticle()"
+            >
+              <i class="ion-edit"></i> Edit Article
+            </button>
+            &nbsp;
+            <button
+              class="btn btn-sm btn-outline-danger"
+              (click)="onDeleteArticle()"
+              [disabled]="isDeletingArticle()"
+            >
+              <i class="ion-trash-a"></i> Delete Article
+            </button>
+          } @else {
+            <button
+              class="btn btn-sm btn-outline-secondary"
+              (click)="onToggleFollow()"
+              [disabled]="!isAuthenticated()"
+            >
+              <i class="ion-plus-round"></i>
+              &nbsp;
+              @if (article.author.following) {
+                Unfollow {{ article.author.username }}
+              } @else {
+                Follow {{ article.author.username }}
+              }
+            </button>
+            &nbsp;
+            <button
+              class="btn btn-sm"
+              [class.btn-outline-primary]="!article.favorited"
+              [class.btn-primary]="article.favorited"
+              (click)="onToggleFavorite()"
+            >
+              <i class="ion-heart"></i>
+              &nbsp;
+              @if (article.favorited) {
+                Unfavorite Article
+              } @else {
+                Favorite Article
+              }
+              <span class="counter">({{ article.favoritesCount }})</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-xs-12 col-md-8 offset-md-2">
+          @if (isAuthenticated()) {
+            <form class="card comment-form" (ngSubmit)="onSubmitComment()">
+              <div class="card-block">
+                <textarea
+                  class="form-control"
+                  placeholder="Write a comment..."
+                  rows="3"
+                  [formControl]="commentControl"
+                  [disabled]="isSubmittingComment()"
+                ></textarea>
+              </div>
+              <div class="card-footer">
+                @if (currentUser(); as user) {
+                  <img
+                    [src]="user.image || 'https://api.realworld.io/images/smiley-cyrus.jpeg'"
+                    class="comment-author-img"
+                    [alt]="user.username"
+                  />
+                }
+                <button
+                  class="btn btn-sm btn-primary"
+                  type="submit"
+                  [disabled]="commentControl.invalid || isSubmittingComment()"
+                >
+                  Post Comment
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="card comment-form">
+              <div class="card-block">
+                <p>
+                  <a [routerLink]="['/login']">Sign in</a> or
+                  <a [routerLink]="['/register']">sign up</a> to add comments on this article.
+                </p>
+              </div>
+            </div>
+          }
+
+          @if (isLoadingComments()) {
+            <div class="card">
+              <div class="card-block">
+                <p>Loading comments...</p>
+              </div>
+            </div>
+          } @else if (commentsError()) {
+            <div class="card">
+              <div class="card-block">
+                <p class="text-danger">{{ commentsError() }}</p>
+              </div>
+            </div>
+          } @else {
+            @for (comment of comments(); track comment.id) {
+              <div class="card">
+                <div class="card-block">
+                  <p class="card-text">{{ comment.body }}</p>
+                </div>
+                <div class="card-footer">
+                  <a [routerLink]="['/profile', comment.author.username]" class="comment-author">
+                    <img
+                      [src]="comment.author.image"
+                      class="comment-author-img"
+                      [alt]="comment.author.username"
+                    />
+                  </a>
+                  &nbsp;
+                  <a [routerLink]="['/profile', comment.author.username]" class="comment-author">
+                    {{ comment.author.username }}
+                  </a>
+                  <span class="date-posted">{{ comment.createdAt | date: 'mediumDate' }}</span>
+                  @if (canModifyComment(comment)) {
+                    <span class="mod-options">
+                      <i
+                        class="ion-trash-a"
+                        (click)="onDeleteComment(comment.id)"
+                        [class.disabled]="isDeletingComment() === comment.id"
+                      ></i>
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

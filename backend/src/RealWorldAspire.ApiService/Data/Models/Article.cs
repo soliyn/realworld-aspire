@@ -24,5 +24,5 @@ public class Article
 
     public List<AppUser> FavoritedByUsers { get; set; } = [];
     
-    public required Author Author { get; set; }
+    public required AppUser Author { get; set; }
 }

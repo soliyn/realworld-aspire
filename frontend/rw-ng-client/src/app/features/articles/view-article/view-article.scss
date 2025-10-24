@@ -1,0 +1,15 @@
+.mod-options {
+  float: right;
+  cursor: pointer;
+
+  i {
+    &:hover {
+      color: #333;
+    }
+
+    &.disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+}

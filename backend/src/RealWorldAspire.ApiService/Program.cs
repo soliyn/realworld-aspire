@@ -27,13 +27,7 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(type => type.FullName);
 });
 
-builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb", configureDbContextOptions: options =>
-{
-    if (builder.Environment.IsDevelopment())
-    {
-        options.UseSeeding((context, _) => context.Seed());
-    }
-});
+builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb");
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
@@ -152,8 +146,10 @@ if (app.Environment.IsDevelopment())
 {
     // Ensure database is created and seeded
     using var scope = app.Services.CreateScope();
-    using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
+    await using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
     context.Database.Migrate();
+    using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    await context.Seed(userManager);
 }
 
 app.MapDefaultEndpoints();

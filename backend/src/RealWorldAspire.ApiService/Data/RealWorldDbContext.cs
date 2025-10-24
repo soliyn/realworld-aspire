@@ -34,8 +34,6 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(uf => uf.FollowingId)
             .OnDelete(DeleteBehavior.Restrict);
         
-        builder.Entity<Author>().HasKey(x => x.AuthorId);
-
         builder.Entity<Article>()
             .HasKey(x => x.ArticleId);
         builder.Entity<Article>()
@@ -63,10 +61,14 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .HasMany(e => e.Tags)
             .WithMany(e => e.Articles)
         ;
+
+        builder.Entity<Article>()
+            .HasOne(e => e.Author)
+            .WithMany(e => e.Articles)
+        ;
     }
 
     public virtual DbSet<Article> Articles { get; set; }
-    public virtual DbSet<Author> Authors { get; set; }
     public virtual DbSet<UserFollow> UserFollows { get; set; }
     public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
     public virtual DbSet<Tag> Tags { get; set; }

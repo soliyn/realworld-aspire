@@ -1,15 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data.Models;
 
 namespace RealWorldAspire.ApiService.Data;
 
 public static class DataSeeder
 {
-    public static void Seed(this DbContext context)
+    public static async Task Seed(this DbContext context, UserManager<AppUser> userManager)
     {
         var article = context.Set<Article>().FirstOrDefault(x => x.Slug == "how-to-learn-javascript-efficiently");
         if (article == null)
         {
+            await userManager.CreateAsync(new AppUser()
+            {
+                Email = "johndoe@example.com",
+                UserName = "johndoe",
+                Bio = "Full-stack developer passionate about clean code and innovative solutions. Love working with modern web technologies.",
+                Image = "https://raw.githubusercontent.com/gothinkster/node-express-realworld-example-app/refs/heads/master/src/assets/images/smiley-cyrus.jpeg",
+            }, "Pwd123");
+            var user = await userManager.FindByEmailAsync("johndoe@example.com") ?? throw new Exception("User not found");
             var newArticle = context.Set<Article>().Add(
                 new Article()
                 {
@@ -20,13 +29,7 @@ public static class DataSeeder
                     CreatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                     UpdatedAt = new DateTime(2025, 10, 9, 0, 0, 0, DateTimeKind.Utc),
                     Tags = [],
-                    Author = new Author()
-                    {
-                        Username = "johndoe",
-                        Bio = "Full-stack developer passionate about clean code and innovative solutions. Love working with modern web technologies.",
-                        Image = "https://raw.githubusercontent.com/gothinkster/node-express-realworld-example-app/refs/heads/master/src/assets/images/smiley-cyrus.jpeg",
-                        Following = false
-                    }
+                    Author = user,
                 }
             );
             context.Set<Tag>().AddRange([
@@ -35,7 +38,7 @@ public static class DataSeeder
                 new Tag() {Name = "programming", Articles = [newArticle.Entity]},
                 new Tag() {Name = "webdev", Articles = [newArticle.Entity]},
             ]);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 }
