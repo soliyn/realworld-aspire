@@ -5,15 +5,26 @@ using Moq;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Profiles;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using MockQueryable.Moq;
 using RealWorldAspire.ApiService.Data;
+using RealWorldAspire.ApiService.Tests.TestUtilities;
 using Xunit;
 using Shouldly;
 
 namespace RealWorldAspire.ApiService.Tests.Features.Profiles.ProfilesHandlersTests;
 
+[Collection(nameof(PostgresDatabaseCollection))]
 public class GetProfile
 {
+    private readonly DbContextOptionsBuilder<RealWorldDbContext> _optionsBuilder;
+
+    public GetProfile(PostgresTestFixture fixture)
+    {
+        _optionsBuilder = new DbContextOptionsBuilder<RealWorldDbContext>();
+        _optionsBuilder.UseNpgsql(fixture.Postgres.GetConnectionString());
+    }
+
     [Fact]
     public async Task Should_Return_404NotFound()
     {
@@ -21,15 +32,13 @@ public class GetProfile
         var userManagerMock = new Mock<UserManager<AppUser>>(
             Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
         );
-        var principal = new ClaimsPrincipal(); 
+        var principal = new ClaimsPrincipal();
         userManagerMock.Setup(x => x.GetUserAsync(It.IsAny<ClaimsPrincipal>()))
             .ReturnsAsync(new AppUser());
 
-        var dbContextMock = new Mock<RealWorldDbContext>();
-        dbContextMock.Setup(x => x.Users).Returns(new List<AppUser>().BuildMockDbSet().Object);
-
         // Act
-        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContextMock.Object);
+        await using var dbContext = new RealWorldDbContext(_optionsBuilder.Options);
+        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContext);
 
         // Assert
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound<string>>()
@@ -40,12 +49,18 @@ public class GetProfile
     public async Task Should_Return_Existing_Profile()
     {
         // Arrange
-        var appUser = new AppUser
+        await using (var dbContext = new RealWorldDbContext(_optionsBuilder.Options))
         {
-            UserName = "jake",
-            Bio = "I work at statefarm",
-            Image = "https://api.realworld.io/images/smiley-cyrus.jpg"
-        };
+            var appUser = new AppUser
+            {
+                UserName = "jake",
+                Email = "jake@example.com",
+                Bio = "I work at statefarm",
+                Image = "https://api.realworld.io/images/smiley-cyrus.jpg"
+            };
+            await dbContext.Users.AddAsync(appUser);
+            await dbContext.SaveChangesAsync();
+        }
 
         var userManagerMock = new Mock<UserManager<AppUser>>(
             Mock.Of<IUserStore<AppUser>>(), null!, null!, null!, null!, null!, null!, null!, null!
@@ -54,12 +69,13 @@ public class GetProfile
             .ReturnsAsync(new AppUser());
 
         var principal = new ClaimsPrincipal(); // Add a dummy principal
-        var dbContextMock = new Mock<RealWorldDbContext>();
-        dbContextMock.Setup(x => x.Users)
-            .Returns((new List<AppUser>() {appUser}).BuildMockDbSet().Object);
 
         // Act
-        var result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContextMock.Object);
+        IResult result;
+        await using (var dbContext = new RealWorldDbContext(_optionsBuilder.Options))
+        {
+            result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContext);
+        }
 
         // Assert
         var okResult = result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.Ok<ProfileResponse>>();

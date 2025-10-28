@@ -27,4 +27,34 @@
       <Folder Include="Migrations\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Features\Profiles\ProfilesHandlers.Follow.cs">
+        <DependentUpon>ProfilesHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Profiles\ProfilesHandlers.GetProfile.cs">
+        <DependentUpon>ProfilesHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Profiles\ProfilesHandlers.Unfollow.cs">
+        <DependentUpon>ProfilesHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.CreateArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.FavoriteArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.GetArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.GetArticles.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.UnfavoriteArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.UpdateArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
 </Project>
