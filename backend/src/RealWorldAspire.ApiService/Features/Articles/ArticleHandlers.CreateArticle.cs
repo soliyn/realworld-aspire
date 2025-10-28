@@ -13,13 +13,14 @@ public static partial class ArticleHandlers
         CreateArticleRequest request,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        TimeProvider timeProvider)
     {
         var user = await userManager.GetUserOrThrow(principal);
 
         var tags = await GetOrCreateTags(request.Article.TagList, dbContext);
 
-        var now = DateTime.UtcNow;
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         var article = new Article
         {
             Slug = new SlugHelper().GenerateSlug(request.Article.Title),

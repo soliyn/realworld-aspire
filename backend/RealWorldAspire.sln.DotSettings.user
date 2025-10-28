@@ -29,5 +29,6 @@
     &lt;TestId&gt;xUnit::608F4210-F61B-46EA-87A6-66BE830869A2::net9.0::RealWorldAspire.ApiService.IntegrationTests.IntegrationTest1.GetWebResourceRootReturnsOkStatusCode&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::608F4210-F61B-46EA-87A6-66BE830869A2::net9.0::RealWorldAspire.ApiService.IntegrationTests.IntegrationTest1&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;xUnit::B458E1C9-2274-414C-BEE3-2B17679C862D::net9.0::RealWorldAspire.ApiService.Tests.Features.Profiles.ProfilesHandlersTests.Unfollow&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::B458E1C9-2274-414C-BEE3-2B17679C862D::net9.0::RealWorldAspire.ApiService.Tests.Features.Articles.ArticleHandlersTests.CreateArticle&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

@@ -114,6 +114,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddTransient<JwtTokenService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
 
