@@ -14,7 +14,8 @@ public static partial class ArticleHandlers
         CreateArticleRequest request,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        TimeProvider timeProvider)
     {
         var user = await userManager.GetUserOrThrow(principal);
 
@@ -45,7 +46,7 @@ public static partial class ArticleHandlers
             article.Description = request.Article.Description;
             article.Body = request.Article.Body;
             article.Tags = await GetOrCreateTags(request.Article.TagList, dbContext);
-            article.UpdatedAt = DateTime.UtcNow;
+            article.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
             await dbContext.SaveChangesAsync();
         }

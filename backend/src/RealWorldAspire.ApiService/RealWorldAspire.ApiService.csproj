@@ -55,6 +55,9 @@
       <Compile Update="Features\Articles\ArticleHandlers.UpdateArticle.cs">
         <DependentUpon>ArticleHandlers.cs</DependentUpon>
       </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.DeleteArticle.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

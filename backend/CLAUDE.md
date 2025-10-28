@@ -93,6 +93,24 @@ Each feature folder contains:
 - Uses xUnit, Moq, Shouldly, and Bogus for fake data generation
 - Tests organized by feature matching the source structure: `Features/Articles/ArticleHandlersTests/`
 - Uses MockQueryable.Moq for mocking DbSet and IQueryable
+- **Object Assertions**: When asserting 2 or more properties of the same object, use `ShouldBeEquivalentTo` with an expected object instead of individual property assertions
+  - For response DTOs: Use the full response object type (e.g., `GetArticleResponse`)
+  - For entity verification: Use anonymous objects with `new { obj.Prop1, obj.Prop2 }`
+  - Example:
+    ```csharp
+    // Good: Object assertion
+    result.ShouldBeOfType<Ok<GetArticleResponse>>()
+        .Value.ShouldBeEquivalentTo(new GetArticleResponse { /* ... */ });
+
+    // Also good: Anonymous object for multiple properties
+    new { entity.Title, entity.Description, entity.Body }
+        .ShouldBeEquivalentTo(new { Title = "...", Description = "...", Body = "..." });
+
+    // Avoid: Individual property assertions
+    // entity.Title.ShouldBe("...");
+    // entity.Description.ShouldBe("...");
+    // entity.Body.ShouldBe("...");
+    ```
 
 ### Integration Tests (RealWorldAspire.ApiService.IntegrationTests)
 - Uses Aspire.Hosting.Testing for full distributed application testing
