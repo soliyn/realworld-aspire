@@ -1,21 +1,18 @@
 ﻿using System.Security.Claims;
-using Bogus;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Profiles;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using MockQueryable.Moq;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Tests.TestUtilities;
-using Xunit;
 using Shouldly;
 
 namespace RealWorldAspire.ApiService.Tests.Features.Profiles.ProfilesHandlersTests;
 
 [Collection(nameof(PostgresDatabaseCollection))]
-public class GetProfile
+public class GetProfile : HandlerTestBase
 {
     private readonly DbContextOptionsBuilder<RealWorldDbContext> _optionsBuilder;
 

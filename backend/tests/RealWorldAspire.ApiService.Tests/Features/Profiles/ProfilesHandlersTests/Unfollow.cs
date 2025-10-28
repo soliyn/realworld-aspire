@@ -11,7 +11,7 @@ using Shouldly;
 namespace RealWorldAspire.ApiService.Tests.Features.Profiles.ProfilesHandlersTests;
 
 [Collection(nameof(PostgresDatabaseCollection))]
-public class Unfollow
+public class Unfollow : HandlerTestBase
 {
     private readonly DbContextOptionsBuilder<RealWorldDbContext> _optionsBuilder;
     private readonly string _connectionString;
