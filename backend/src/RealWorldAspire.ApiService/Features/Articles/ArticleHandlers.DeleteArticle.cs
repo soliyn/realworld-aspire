@@ -7,7 +7,7 @@ using RealWorldAspire.ApiService.Extensions;
 
 namespace RealWorldAspire.ApiService.Features.Articles;
 
-public partial class ArticleHandlers
+public static partial class ArticleHandlers
 {
     public static async Task<IResult> DeleteArticle(
         string slug,

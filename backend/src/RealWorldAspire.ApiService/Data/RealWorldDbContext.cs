@@ -66,10 +66,32 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .HasOne(e => e.Author)
             .WithMany(e => e.Articles)
         ;
+
+        builder.Entity<Comment>()
+            .HasKey(e => e.Id);
+        builder.Entity<Comment>()
+            .Property(e => e.CreatedAt)
+            .HasConversion(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            );
+        builder.Entity<Comment>()
+            .Property(e => e.UpdatedAt)
+            .HasConversion(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            );
+        builder.Entity<Comment>()
+            .HasOne(e => e.Author)
+            .WithMany(e => e.Comments);
+        builder.Entity<Comment>()
+            .HasOne(e => e.Article)
+            .WithMany(e => e.Comments);
     }
 
     public virtual DbSet<Article> Articles { get; set; }
     public virtual DbSet<UserFollow> UserFollows { get; set; }
     public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
     public virtual DbSet<Tag> Tags { get; set; }
+    public virtual DbSet<Comment> Comments { get; set; }
 }

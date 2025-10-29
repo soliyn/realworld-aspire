@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RealWorldAspire.ApiService.Data;
@@ -11,9 +12,11 @@ using RealWorldAspire.ApiService.Data;
 namespace RealWorldAspire.ApiService.Migrations
 {
     [DbContext(typeof(RealWorldDbContext))]
-    partial class RealWorldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251028184258_AddComment")]
+    partial class AddComment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -295,9 +298,6 @@ namespace RealWorldAspire.ApiService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArticleId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("AuthorId")
                         .IsRequired()
                         .HasColumnType("text");
@@ -313,8 +313,6 @@ namespace RealWorldAspire.ApiService.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ArticleId");
 
                     b.HasIndex("AuthorId");
 
@@ -457,17 +455,11 @@ namespace RealWorldAspire.ApiService.Migrations
 
             modelBuilder.Entity("RealWorldAspire.ApiService.Data.Models.Comment", b =>
                 {
-                    b.HasOne("RealWorldAspire.ApiService.Data.Models.Article", "Article")
-                        .WithMany("Comments")
-                        .HasForeignKey("ArticleId");
-
                     b.HasOne("RealWorldAspire.ApiService.Data.Models.AppUser", "Author")
                         .WithMany("Comments")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Article");
 
                     b.Navigation("Author");
                 });
@@ -515,11 +507,6 @@ namespace RealWorldAspire.ApiService.Migrations
                     b.Navigation("Followers");
 
                     b.Navigation("Following");
-                });
-
-            modelBuilder.Entity("RealWorldAspire.ApiService.Data.Models.Article", b =>
-                {
-                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

@@ -23,6 +23,8 @@ public class Article
     public DateTime UpdatedAt { get; set; }
 
     public List<AppUser> FavoritedByUsers { get; set; } = [];
-    
+
     public required AppUser Author { get; set; }
+
+    public List<Comment> Comments { get; set; } = [];
 }

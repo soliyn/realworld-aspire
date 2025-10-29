@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RealWorldAspire.ApiService.Data;
@@ -11,9 +12,11 @@ using RealWorldAspire.ApiService.Data;
 namespace RealWorldAspire.ApiService.Migrations
 {
     [DbContext(typeof(RealWorldDbContext))]
-    partial class RealWorldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029105814_AddCommentModel")]
+    partial class AddCommentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

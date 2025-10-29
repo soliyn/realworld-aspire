@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using RealWorldAspire.ApiService.Data;
@@ -11,9 +12,11 @@ using RealWorldAspire.ApiService.Data;
 namespace RealWorldAspire.ApiService.Migrations
 {
     [DbContext(typeof(RealWorldDbContext))]
-    partial class RealWorldDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251028190049_AddCommentArticleRelationship")]
+    partial class AddCommentArticleRelationship
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -295,7 +298,7 @@ namespace RealWorldAspire.ApiService.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ArticleId")
+                    b.Property<int>("ArticleId")
                         .HasColumnType("integer");
 
                     b.Property<string>("AuthorId")
@@ -459,7 +462,9 @@ namespace RealWorldAspire.ApiService.Migrations
                 {
                     b.HasOne("RealWorldAspire.ApiService.Data.Models.Article", "Article")
                         .WithMany("Comments")
-                        .HasForeignKey("ArticleId");
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("RealWorldAspire.ApiService.Data.Models.AppUser", "Author")
                         .WithMany("Comments")

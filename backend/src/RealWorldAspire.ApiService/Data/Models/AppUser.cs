@@ -35,4 +35,5 @@ public class AppUser : IdentityUser
     
     public List<Article> FavoritedArticles { get; } = [];
     public List<Article> Articles { get; } = [];
+    public List<Comment> Comments { get; } = [];
 }
