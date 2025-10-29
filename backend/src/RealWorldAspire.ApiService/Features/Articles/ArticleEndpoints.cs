@@ -6,6 +6,7 @@ public static class ArticleEndpoints
     {
         var articlesEndPoints = endpoints.MapGroup("/articles");
 
+        articlesEndPoints.MapGet("/feed", ArticleHandlers.GetFeed).RequireAuthorization();
         articlesEndPoints.MapGet("/{slug}", ArticleHandlers.GetArticle);
         articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle);
         articlesEndPoints.MapGet("", ArticleHandlers.GetArticles);
