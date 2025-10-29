@@ -16,7 +16,8 @@ public static class ArticleEndpoints
         articlesEndPoints.MapDelete("{slug}/favorite", ArticleHandlers.UnfavoriteArticle).RequireAuthorization();
 
         articlesEndPoints.MapPost("{slug}/comments", ArticleHandlers.CreateComment).RequireAuthorization();
-        
+        articlesEndPoints.MapGet("{slug}/comments", ArticleHandlers.GetComments);
+
         return endpoints;
     }
 }
