@@ -64,6 +64,9 @@
       <Compile Update="Features\Articles\ArticleHandlers.GetComments.cs">
         <DependentUpon>ArticleHandlers.cs</DependentUpon>
       </Compile>
+      <Compile Update="Features\Articles\ArticleHandlers.DeleteComment.cs">
+        <DependentUpon>ArticleHandlers.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>
