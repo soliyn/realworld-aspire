@@ -42,7 +42,6 @@ public static class UserHandlers
         }
 
         user.Email = request.User.Email;
-        user.UserName = request.User.Username;
         user.Bio = request.User.Bio;
         user.Image = request.User.Image;
 
