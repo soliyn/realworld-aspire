@@ -7,7 +7,8 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet clean:*)",
       "Bash(dotnet ef migrations add:*)",
-      "WebSearch"
+      "WebSearch",
+      "WebFetch(domain:docs.realworld.show)"
     ],
     "deny": [],
     "ask": []

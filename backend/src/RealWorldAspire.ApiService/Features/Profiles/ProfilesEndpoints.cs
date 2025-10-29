@@ -7,8 +7,8 @@ public static class ProfilesEndpoints
         var profilesEndPoints = endpoints.MapGroup("/profiles");
 
         profilesEndPoints.MapGet("{username}", ProfilesHandlers.GetProfile);
-        profilesEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow);
-        profilesEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow);
+        profilesEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow).RequireAuthorization();
+        profilesEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow).RequireAuthorization();
         
         return endpoints;
     }

@@ -8,7 +8,7 @@ public static class ArticleEndpoints
 
         articlesEndPoints.MapGet("/feed", ArticleHandlers.GetFeed).RequireAuthorization();
         articlesEndPoints.MapGet("/{slug}", ArticleHandlers.GetArticle);
-        articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle);
+        articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle).RequireAuthorization();
         articlesEndPoints.MapGet("", ArticleHandlers.GetArticles);
         articlesEndPoints.MapPost("", ArticleHandlers.CreateArticle).RequireAuthorization();
         articlesEndPoints.MapPut("/{slug}", ArticleHandlers.UpdateArticle).RequireAuthorization();
