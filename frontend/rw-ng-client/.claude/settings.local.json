@@ -6,7 +6,9 @@
       "Bash(npm test:*)",
       "Bash(npm uninstall:*)",
       "Bash(cat:*)",
-      "Bash(npx ng test)"
+      "Bash(npx ng test)",
+      "Bash(mv:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

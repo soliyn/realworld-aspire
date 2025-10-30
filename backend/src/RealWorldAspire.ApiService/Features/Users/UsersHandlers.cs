@@ -53,6 +53,8 @@ public static class UsersHandlers
                     Username = user.UserName,
                     Email = user.Email,
                     Token = token,
+                    Bio = user.Bio,
+                    Image = user.Image,
                 }
             });        
         }

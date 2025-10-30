@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet test:*)",
+      "Bash(dir:*)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "WebSearch",
+      "WebFetch(domain:docs.realworld.show)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

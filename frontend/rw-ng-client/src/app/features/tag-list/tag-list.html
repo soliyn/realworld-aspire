@@ -1,9 +1,11 @@
 <p>Popular Tags</p>
 
 <div class="tag-list">
-  @for (tag of tags(); track tag) {
-    <a href="" class="tag-pill tag-default" (click)="onTagClick($event, tag)">{{ tag }}</a>
-  } @empty {
+  @if (isLoading()) {
     <div>Loading tags...</div>
+  } @else {
+    @for (tag of tags(); track tag) {
+      <a href="" class="tag-pill tag-default" (click)="onTagClick($event, tag)">{{ tag }}</a>
+    }
   }
 </div>

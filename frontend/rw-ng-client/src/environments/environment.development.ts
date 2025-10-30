@@ -1,3 +1,4 @@
 export const environment = {
-  apiUrl: 'https://api.realworld.show/api',
+  apiUrl: 'http://localhost:5386/api',
+  // apiUrl: 'https://api.realworld.show/api',
 };

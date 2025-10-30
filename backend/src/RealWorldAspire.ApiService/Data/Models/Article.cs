@@ -17,12 +17,14 @@ public class Article
     
     public required string Body { get; set; }
     
-    public required List<string> TagList { get; set; }
+    public required List<Tag> Tags { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
     public List<AppUser> FavoritedByUsers { get; set; } = [];
-    
-    public required Author Author { get; set; }
+
+    public required AppUser Author { get; set; }
+
+    public List<Comment> Comments { get; set; } = [];
 }

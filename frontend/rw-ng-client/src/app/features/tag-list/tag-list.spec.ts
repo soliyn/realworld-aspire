@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Observable } from 'rxjs';
 import { TagList } from './tag-list';
 import { TagsService, TagsResponse } from './tags.service';
 import { DebugElement } from '@angular/core';
@@ -64,21 +64,37 @@ describe('TagList', () => {
     expect(tagElements[3].nativeElement.textContent.trim()).toBe('rxjs');
   });
 
-  it('should display loading message when tags array is empty', () => {
-    // Create new fixture with empty tags response
-    tagsService.getTags.mockReturnValue(of({ tags: [] }));
+  it('should display loading message while tags are being fetched', () => {
+    // Create a new fixture with a delayed observable
+    const delayedResponse = new Promise<TagsResponse>((resolve) => {
+      setTimeout(() => resolve(mockTagsResponse), 100);
+    });
 
-    const newFixture = TestBed.createComponent(TagList);
-    newFixture.detectChanges();
-
-    const emptyTagList: DebugElement = newFixture.debugElement.query(
-      By.css('.tag-list')
+    tagsService.getTags.mockReturnValue(
+      new Observable<TagsResponse>((subscriber) => {
+        delayedResponse.then((response) => {
+          subscriber.next(response);
+          subscriber.complete();
+        });
+      })
     );
 
-    expect(emptyTagList.nativeElement.textContent.trim()).toBe('Loading tags...');
+    const delayedFixture = TestBed.createComponent(TagList);
+    const delayedComponent = delayedFixture.componentInstance;
+
+    // Before detectChanges, the signal subscription hasn't started
+    expect(delayedComponent.isLoading()).toBe(true);
+
+    delayedFixture.detectChanges();
+
+    const loadingMessage: DebugElement = delayedFixture.debugElement.query(
+      By.css('.tag-list div')
+    );
+
+    expect(loadingMessage.nativeElement.textContent.trim()).toBe('Loading tags...');
   });
 
-  it('should handle empty tags response', () => {
+  it('should handle empty tags response without showing loading message', () => {
     tagsService.getTags.mockReturnValue(of({ tags: [] }));
 
     fixture = TestBed.createComponent(TagList);
@@ -86,9 +102,13 @@ describe('TagList', () => {
     fixture.detectChanges();
 
     expect(component.tags()).toEqual([]);
+    expect(component.isLoading()).toBe(false);
 
     const tagList: DebugElement = fixture.debugElement.query(By.css('.tag-list'));
-    expect(tagList.nativeElement.textContent.trim()).toBe('Loading tags...');
+    const tagPills = fixture.debugElement.queryAll(By.css('.tag-pill'));
+
+    expect(tagPills.length).toBe(0);
+    expect(tagList.nativeElement.textContent.trim()).toBe('');
   });
 
   it('should render tags with correct CSS classes', () => {
@@ -112,6 +132,13 @@ describe('TagList', () => {
     expect(heading.nativeElement.textContent).toBe('Popular Tags');
   });
 
+  it('should set isLoading to false after tags are loaded', () => {
+    fixture.detectChanges();
+
+    expect(component.isLoading()).toBe(false);
+    expect(component.tags()).toEqual(mockTagsResponse.tags);
+  });
+
   it('should handle service errors gracefully', () => {
     const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
@@ -125,6 +152,8 @@ describe('TagList', () => {
 
     // Should return empty array on error
     expect(errorComponent.tags()).toEqual([]);
+    // Should set loading to false
+    expect(errorComponent.isLoading()).toBe(false);
     // Should log the error
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       'Error loading tags:',

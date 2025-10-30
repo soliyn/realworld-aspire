@@ -13,6 +13,11 @@ export interface User {
   image?: string;
 }
 
+interface JwtPayload {
+  exp?: number;
+  [key: string]: any;
+}
+
 interface LoginResponse {
   user: User;
 }
@@ -34,9 +39,16 @@ export class AuthService {
   constructor() {
     // Initialize with user from localStorage if exists
     const storedUser = localStorage.getItem('currentUser');
-    this.currentUserSubject = new BehaviorSubject<User | null>(
-      storedUser ? JSON.parse(storedUser) : null
-    );
+    const user = storedUser ? JSON.parse(storedUser) : null;
+
+    // Check if stored token is expired and clear it if so
+    if (user && this.isTokenExpired(user.token)) {
+      localStorage.removeItem('currentUser');
+      this.currentUserSubject = new BehaviorSubject<User | null>(null);
+    } else {
+      this.currentUserSubject = new BehaviorSubject<User | null>(user);
+    }
+
     this.currentUser$ = this.currentUserSubject.asObservable();
   }
 
@@ -89,5 +101,43 @@ export class AuthService {
 
   getToken(): string | null {
     return this.currentUserValue?.token || null;
+  }
+
+  /**
+   * Decodes a JWT token and returns its payload
+   */
+  private decodeToken(token: string): JwtPayload | null {
+    try {
+      const base64Url = token.split('.')[1];
+      if (!base64Url) return null;
+
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      );
+
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Checks if a JWT token is expired
+   */
+  private isTokenExpired(token: string): boolean {
+    const payload = this.decodeToken(token);
+    if (!payload || !payload.exp) {
+      // If we can't decode or there's no expiration, consider it invalid
+      return true;
+    }
+
+    // JWT exp is in seconds, Date.now() is in milliseconds
+    const expirationDate = payload.exp * 1000;
+    return Date.now() >= expirationDate;
   }
 }

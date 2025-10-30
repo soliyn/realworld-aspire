@@ -4,11 +4,11 @@ public static class ProfilesEndpoints
 {
     public static IEndpointRouteBuilder MapProfilesEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        var userEndPoints = endpoints.MapGroup("/profiles");
+        var profilesEndPoints = endpoints.MapGroup("/profiles");
 
-        userEndPoints.MapGet("{username}", ProfilesHandlers.GetProfile);
-        userEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow);
-        userEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow);
+        profilesEndPoints.MapGet("{username}", ProfilesHandlers.GetProfile);
+        profilesEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow).RequireAuthorization();
+        profilesEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow).RequireAuthorization();
         
         return endpoints;
     }

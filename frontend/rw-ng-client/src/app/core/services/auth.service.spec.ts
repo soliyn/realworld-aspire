@@ -10,10 +10,24 @@ describe('AuthService', () => {
   let apiService: jest.Mocked<ApiService>;
   let router: jest.Mocked<Router>;
 
+  // Create a valid JWT token with expiration far in the future (year 2099)
+  const createMockToken = (exp?: number) => {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(
+      JSON.stringify({
+        sub: 'testuser',
+        email: 'test@example.com',
+        exp: exp || Math.floor(new Date('2099-01-01').getTime() / 1000),
+      })
+    );
+    const signature = 'mock-signature';
+    return `${header}.${payload}.${signature}`;
+  };
+
   const mockUser: User = {
     username: 'testuser',
     email: 'test@example.com',
-    token: 'test-token-123',
+    token: createMockToken(),
   };
 
   const mockLoginResponse = {
@@ -98,6 +112,40 @@ describe('AuthService', () => {
         expect(user).toBeNull();
         done();
       });
+    });
+
+    it('should clear expired token from localStorage on initialization', () => {
+      TestBed.resetTestingModule();
+
+      // Create an expired token (exp in the past)
+      const expiredToken = createMockToken(Math.floor(Date.now() / 1000) - 3600); // 1 hour ago
+      const expiredUser = { ...mockUser, token: expiredToken };
+      localStorage.setItem('currentUser', JSON.stringify(expiredUser));
+
+      const apiServiceMock = {
+        get: jest.fn(),
+        post: jest.fn(),
+        put: jest.fn(),
+        delete: jest.fn(),
+        patch: jest.fn(),
+      };
+
+      const routerMock = {
+        navigate: jest.fn(),
+      };
+
+      TestBed.configureTestingModule({
+        providers: [
+          AuthService,
+          { provide: ApiService, useValue: apiServiceMock },
+          { provide: Router, useValue: routerMock },
+        ],
+      });
+
+      const newService = TestBed.inject(AuthService);
+
+      expect(newService.currentUserValue).toBeNull();
+      expect(localStorage.getItem('currentUser')).toBeNull();
     });
   });
 
@@ -245,7 +293,7 @@ describe('AuthService', () => {
     it('should return token when user is logged in', () => {
       service['currentUserSubject'].next(mockUser);
 
-      expect(service.getToken()).toBe('test-token-123');
+      expect(service.getToken()).toBe(mockUser.token);
     });
   });
 

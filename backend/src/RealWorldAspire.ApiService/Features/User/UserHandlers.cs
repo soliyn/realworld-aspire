@@ -41,15 +41,9 @@ public static class UserHandlers
             return TypedResults.Unauthorized();
         }
 
-        // Update user properties
-        if (!string.IsNullOrEmpty(request.User.Username))
-            user.UserName = request.User.Username;
-        if (!string.IsNullOrEmpty(request.User.Bio))
-            user.Bio = request.User.Bio;
-        if (!string.IsNullOrEmpty(request.User.Image))
-            user.Image = request.User.Image;
-        if (!string.IsNullOrEmpty(request.User.Email))
-            user.Email = request.User.Email;
+        user.Email = request.User.Email;
+        user.Bio = request.User.Bio;
+        user.Image = request.User.Image;
 
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)

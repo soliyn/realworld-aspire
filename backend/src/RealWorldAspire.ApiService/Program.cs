@@ -7,6 +7,7 @@ using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
 using RealWorldAspire.ApiService.Features.Articles;
 using RealWorldAspire.ApiService.Features.Profiles;
+using RealWorldAspire.ApiService.Features.Tags;
 using RealWorldAspire.ApiService.Features.User;
 using RealWorldAspire.ApiService.Features.Users;
 
@@ -26,13 +27,7 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(type => type.FullName);
 });
 
-builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb", configureDbContextOptions: options =>
-{
-    if (builder.Environment.IsDevelopment())
-    {
-        options.UseSeeding((context, _) => context.Seed());
-    }
-});
+builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb");
 
 builder.Services.AddIdentity<AppUser, IdentityRole>(options =>
     {
@@ -106,7 +101,20 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Add CORS for frontend
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddTransient<JwtTokenService>();
+builder.Services.AddSingleton(TimeProvider.System);
 
 var app = builder.Build();
 
@@ -132,17 +140,22 @@ appApi
     .MapUserEndpoints()
     .MapUsersEndpoints()
     .MapProfilesEndpoints()
+    .MapTagsEndpoints()
     ;
 
 if (app.Environment.IsDevelopment())
 {
     // Ensure database is created and seeded
     using var scope = app.Services.CreateScope();
-    using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
+    await using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
     context.Database.Migrate();
+    using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    await context.Seed(userManager);
 }
 
 app.MapDefaultEndpoints();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

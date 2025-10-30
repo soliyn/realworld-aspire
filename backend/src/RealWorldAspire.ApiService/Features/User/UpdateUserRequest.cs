@@ -9,9 +9,6 @@ public class UpdateUserRequest
     
     public class UserModel
     {
-        [MaxLength(ValidationConstants.AppUser.UserNameMaxLength)]
-        public string? Username { get; set; }
-        
         [MaxLength(ValidationConstants.AppUser.EmailMaxLength)]
         public required string Email { get; set; }
 

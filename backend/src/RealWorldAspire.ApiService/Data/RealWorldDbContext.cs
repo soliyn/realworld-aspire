@@ -34,8 +34,6 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .HasForeignKey(uf => uf.FollowingId)
             .OnDelete(DeleteBehavior.Restrict);
         
-        builder.Entity<Author>().HasKey(x => x.AuthorId);
-
         builder.Entity<Article>()
             .HasKey(x => x.ArticleId);
         builder.Entity<Article>()
@@ -58,10 +56,42 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
             .WithMany(e => e.FavoritedArticles)
             .UsingEntity<FavoriteArticle>()
         ;
+
+        builder.Entity<Article>()
+            .HasMany(e => e.Tags)
+            .WithMany(e => e.Articles)
+        ;
+
+        builder.Entity<Article>()
+            .HasOne(e => e.Author)
+            .WithMany(e => e.Articles)
+        ;
+
+        builder.Entity<Comment>()
+            .HasKey(e => e.Id);
+        builder.Entity<Comment>()
+            .Property(e => e.CreatedAt)
+            .HasConversion(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            );
+        builder.Entity<Comment>()
+            .Property(e => e.UpdatedAt)
+            .HasConversion(
+                v => v.ToUniversalTime(),
+                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
+            );
+        builder.Entity<Comment>()
+            .HasOne(e => e.Author)
+            .WithMany(e => e.Comments);
+        builder.Entity<Comment>()
+            .HasOne(e => e.Article)
+            .WithMany(e => e.Comments);
     }
 
     public virtual DbSet<Article> Articles { get; set; }
-    public virtual DbSet<Author> Authors { get; set; }
     public virtual DbSet<UserFollow> UserFollows { get; set; }
     public virtual DbSet<FavoriteArticle> FavoriteArticles { get; set; }
+    public virtual DbSet<Tag> Tags { get; set; }
+    public virtual DbSet<Comment> Comments { get; set; }
 }

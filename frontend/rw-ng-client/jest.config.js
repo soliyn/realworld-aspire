@@ -15,6 +15,6 @@ module.exports = {
     moduleFileExtensions: ['ts', 'html', 'js', 'json', 'mjs'],
     testMatch: ['**/+(*.)+(spec).+(ts)'],
     transformIgnorePatterns: [
-        'node_modules/(?!.*\\.mjs$|@angular|@ngrx|rxjs|tslib)',
+        'node_modules/(?!.*\\.mjs$|@angular|@ngrx|rxjs|tslib|marked)',
     ],
 };

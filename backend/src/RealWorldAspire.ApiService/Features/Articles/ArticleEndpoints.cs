@@ -6,11 +6,20 @@ public static class ArticleEndpoints
     {
         var articlesEndPoints = endpoints.MapGroup("/articles");
 
+        articlesEndPoints.MapGet("/feed", ArticleHandlers.GetFeed).RequireAuthorization();
         articlesEndPoints.MapGet("/{slug}", ArticleHandlers.GetArticle);
+        articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle).RequireAuthorization();
         articlesEndPoints.MapGet("", ArticleHandlers.GetArticles);
-        articlesEndPoints.MapPost("{slug}/favorite", ArticleHandlers.FavoriteArticle);
-        articlesEndPoints.MapDelete("{slug}/favorite", ArticleHandlers.UnfavoriteArticle);
-        
+        articlesEndPoints.MapPost("", ArticleHandlers.CreateArticle).RequireAuthorization();
+        articlesEndPoints.MapPut("/{slug}", ArticleHandlers.UpdateArticle).RequireAuthorization();
+
+        articlesEndPoints.MapPost("{slug}/favorite", ArticleHandlers.FavoriteArticle).RequireAuthorization();
+        articlesEndPoints.MapDelete("{slug}/favorite", ArticleHandlers.UnfavoriteArticle).RequireAuthorization();
+
+        articlesEndPoints.MapPost("{slug}/comments", ArticleHandlers.CreateComment).RequireAuthorization();
+        articlesEndPoints.MapGet("{slug}/comments", ArticleHandlers.GetComments);
+        articlesEndPoints.MapDelete("{slug}/comments/{id}", ArticleHandlers.DeleteComment).RequireAuthorization();
+
         return endpoints;
     }
 }
