@@ -13,9 +13,23 @@ describe('Settings', () => {
   let apiService: jest.Mocked<ApiService>;
   let router: jest.Mocked<Router>;
 
+  // Create a valid JWT token with expiration far in the future (year 2099)
+  const createMockToken = (exp?: number) => {
+    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const payload = btoa(
+      JSON.stringify({
+        sub: 'testuser',
+        email: 'test@example.com',
+        exp: exp || Math.floor(new Date('2099-01-01').getTime() / 1000),
+      })
+    );
+    const signature = 'mock-signature';
+    return `${header}.${payload}.${signature}`;
+  };
+
   const mockUser: User = {
     email: 'test@example.com',
-    token: 'test-token',
+    token: createMockToken(),
     username: 'testuser',
     bio: 'Test bio',
     image: 'https://example.com/image.jpg',
@@ -87,7 +101,7 @@ describe('Settings', () => {
     it('should handle missing bio and image', () => {
       const userWithoutBioAndImage: User = {
         email: 'test@example.com',
-        token: 'test-token',
+        token: createMockToken(),
         username: 'testuser',
       };
       Object.defineProperty(authService, 'currentUserValue', {
