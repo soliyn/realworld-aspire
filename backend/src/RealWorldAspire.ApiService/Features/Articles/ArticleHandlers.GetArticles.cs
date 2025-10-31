@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
+using RealWorldAspire.ApiService.Extensions;
 
 namespace RealWorldAspire.ApiService.Features.Articles;
 
@@ -20,27 +21,21 @@ public static partial class ArticleHandlers
 
         var user = await userManager.GetUserAsync(principal);
 
-        IQueryable<Article> query = dbContext.Articles
-                .Include(x => x.Author)
-            ;
+        IQueryable<Article> query = dbContext.Articles;
 
-        if (request.Tag != null)
-        {
-            query = query.Where(x => x.Tags.Any(t => t.Name == request.Tag));
-        }
+        query = query.WhereIf(request.Tag is not null, 
+            x => x.Tags.Any(t => t.Name == request.Tag)
+        );
+        query = query.WhereIf(request.Author is not null, 
+            x => x.Author.UserName == request.Author
+        );
+        query = query.WhereIf(request.Favorited is not null, 
+            x => x.FavoritedByUsers.Any(u => u.UserName == request.Favorited)
+        );
 
-        if (request.Author != null)
-        {
-            query = query.Where(x => x.Author.UserName == request.Author);
-        }
-
-        if (request.Favorited != null)
-        {
-            query = query.Where(x => x.FavoritedByUsers.Any(u => u.UserName == request.Favorited));
-        }
+        var totalCount = await query.CountAsync();
 
         var articles = await query
-            .Include(x => x.Author)
             .OrderByDescending(x => x.CreatedAt)
             .Skip(offset)
             .Take(limit)
@@ -60,10 +55,10 @@ public static partial class ArticleHandlers
                     Bio = x.Author.Bio,
                     Image = x.Author.Image,
                     Following = user != null && x.Author.Followers.Any(u => u.FollowerId == user.Id),
-                }
+                },
             })
             .ToListAsync();
 
-        return TypedResults.Ok(new GetArticlesResponse { Articles = articles, ArticlesCount = articles.Count });
+        return TypedResults.Ok(new GetArticlesResponse { Articles = articles, ArticlesCount = totalCount });
     }
 }
