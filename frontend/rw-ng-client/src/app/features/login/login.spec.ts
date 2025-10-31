@@ -430,6 +430,9 @@ describe('Login', () => {
     });
 
     it('should call onSubmit when form is submitted', () => {
+      // Mock authService.login to return an observable before spying
+      authService.login.mockReturnValue(of(mockUser));
+
       const onSubmitSpy = jest.spyOn(component, 'onSubmit');
       component.loginForm.patchValue({
         email: 'test@example.com',

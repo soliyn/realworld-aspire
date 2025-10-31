@@ -1,9 +1,9 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap, tap } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 import { marked } from 'marked';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -66,6 +66,17 @@ export class ViewArticle implements OnInit {
     }
     return marked.parse(article.body, { async: false }) as string;
   });
+
+  constructor() {
+    // Control the disabled state of commentControl through the FormControl API
+    effect(() => {
+      if (this.isSubmittingComment()) {
+        this.commentControl.disable();
+      } else {
+        this.commentControl.enable();
+      }
+    });
+  }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');

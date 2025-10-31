@@ -474,6 +474,9 @@ describe('Register', () => {
     });
 
     it('should call onSubmit when form is submitted', () => {
+      // Mock authService.register to return an observable before spying
+      authService.register.mockReturnValue(of(mockUser));
+
       const onSubmitSpy = jest.spyOn(component, 'onSubmit');
       component.registerForm.patchValue({
         username: 'testuser',

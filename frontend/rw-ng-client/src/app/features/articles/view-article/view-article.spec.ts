@@ -182,6 +182,9 @@ describe('ViewArticle', () => {
     });
 
     it('should display error when article fails to load', async () => {
+      // Mock console.error to suppress expected error output in test
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
       mockArticlesService.getArticle.mockReturnValue(
         throwError(() => new Error('Article not found'))
       );
@@ -189,6 +192,15 @@ describe('ViewArticle', () => {
       await waitFor(() => {
         expect(screen.getByText('Failed to load article. It may not exist.')).toBeTruthy();
       });
+
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error loading article:',
+        expect.any(Error)
+      );
+
+      // Restore console.error
+      consoleErrorSpy.mockRestore();
     });
   });
 
@@ -209,6 +221,9 @@ describe('ViewArticle', () => {
     });
 
     it('should display error when comments fail to load', async () => {
+      // Mock console.error to suppress expected error output in test
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
       mockArticlesService.getComments.mockReturnValue(
         throwError(() => new Error('Comments not found'))
       );
@@ -216,6 +231,15 @@ describe('ViewArticle', () => {
       await waitFor(() => {
         expect(screen.getByText('Failed to load comments.')).toBeTruthy();
       });
+
+      // Verify error was logged
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error loading comments:',
+        expect.any(Error)
+      );
+
+      // Restore console.error
+      consoleErrorSpy.mockRestore();
     });
 
     it('should show comment form when authenticated', async () => {

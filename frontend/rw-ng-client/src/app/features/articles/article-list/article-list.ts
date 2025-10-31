@@ -34,14 +34,11 @@ export class ArticleList {
 
   constructor() {
     // Reset to page 1 when feed type or tag changes
-    effect(
-      () => {
-        this.feedStateService.currentFeedType();
-        this.feedStateService.currentTag();
-        this.currentPage.set(1);
-      },
-      { allowSignalWrites: true }
-    );
+    effect(() => {
+      this.feedStateService.currentFeedType();
+      this.feedStateService.currentTag();
+      this.currentPage.set(1);
+    });
   }
 
   private articlesState = toSignal(
