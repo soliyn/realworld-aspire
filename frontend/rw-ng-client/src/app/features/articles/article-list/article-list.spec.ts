@@ -261,13 +261,13 @@ describe('ArticleList', () => {
     expect(component.articles().length).toBe(2);
   });
 
-  it('should call ArticlesService.getArticles without parameters', async () => {
+  it('should call ArticlesService.getArticles with pagination parameters', async () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     await render(ArticleList, {
       providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
     });
 
-    expect(mockArticlesService.getArticles).toHaveBeenCalledWith(undefined);
+    expect(mockArticlesService.getArticles).toHaveBeenCalledWith({ limit: 10, offset: 0 });
   });
 });
