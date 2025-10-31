@@ -1,8 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/angular';
 import { of, throwError } from 'rxjs';
+import { signal } from '@angular/core';
+import { Router, provideRouter } from '@angular/router';
 import { ArticleList } from './article-list';
 import { ArticlesService } from '../articles.service';
-import { Article, ArticlesResponse } from '../../../core/models/article.model';
+import { Article, ArticlesResponse, ArticleResponse } from '../../../core/models/article.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { FeedStateService } from '../../../core/services/feed-state.service';
 
 describe('ArticleList', () => {
   const mockArticles: Article[] = [
@@ -49,17 +53,40 @@ describe('ArticleList', () => {
 
   const mockArticlesService = {
     getArticles: jest.fn(),
+    getFeed: jest.fn(),
+    favoriteArticle: jest.fn(),
+    unfavoriteArticle: jest.fn(),
+  };
+
+  const mockAuthService = {
+    isAuthenticated: jest.fn(),
+  };
+
+  const mockFeedStateService = {
+    currentFeedType: signal('global' as 'global' | 'your-feed' | 'tag'),
+    currentTag: signal(null as string | null),
   };
 
   beforeEach(() => {
     mockArticlesService.getArticles.mockClear();
+    mockArticlesService.getFeed.mockClear();
+    mockArticlesService.favoriteArticle.mockClear();
+    mockArticlesService.unfavoriteArticle.mockClear();
+    mockAuthService.isAuthenticated.mockClear();
   });
+
+  const defaultProviders = [
+    { provide: ArticlesService, useValue: mockArticlesService },
+    { provide: AuthService, useValue: mockAuthService },
+    { provide: FeedStateService, useValue: mockFeedStateService },
+    provideRouter([]),
+  ];
 
   it('should create the component', async () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     expect(fixture.componentInstance).toBeTruthy();
@@ -69,7 +96,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -80,7 +107,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     expect(mockArticlesService.getArticles).toHaveBeenCalled();
@@ -92,7 +119,7 @@ describe('ArticleList', () => {
     });
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     // The loading should be complete by this point
@@ -104,7 +131,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     await waitFor(() => {
@@ -117,7 +144,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -131,7 +158,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -146,7 +173,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(throwError(() => error));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -162,7 +189,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(throwError(() => error));
 
     const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -176,7 +203,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     const { container } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     await waitFor(() => {
@@ -193,7 +220,7 @@ describe('ArticleList', () => {
     mockArticlesService.getArticles.mockReturnValue(of(emptyResponse));
 
     const { fixture, container } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     const component = fixture.componentInstance;
@@ -205,69 +232,240 @@ describe('ArticleList', () => {
     });
   });
 
-  it('should log to console when favorite is toggled', async () => {
-    mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-    const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
-    });
-
-    const component = fixture.componentInstance;
-    component.onFavoriteToggle(mockArticles[0]);
-
-    expect(consoleSpy).toHaveBeenCalledWith('Favorite toggled for:', 'first-article');
-
-    consoleSpy.mockRestore();
-  });
-
-  it('should handle favorite toggle for different articles', async () => {
-    mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-
-    const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
-    });
-
-    const component = fixture.componentInstance;
-
-    component.onFavoriteToggle(mockArticles[0]);
-    expect(consoleSpy).toHaveBeenCalledWith('Favorite toggled for:', 'first-article');
-
-    component.onFavoriteToggle(mockArticles[1]);
-    expect(consoleSpy).toHaveBeenCalledWith('Favorite toggled for:', 'second-article');
-
-    expect(consoleSpy).toHaveBeenCalledTimes(2);
-
-    consoleSpy.mockRestore();
-  });
-
-  it('should maintain articles state after favorite toggle', async () => {
-    mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
-
-    const { fixture } = await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
-    });
-
-    const component = fixture.componentInstance;
-
-    await waitFor(() => {
-      expect(component.articles().length).toBe(2);
-    });
-
-    component.onFavoriteToggle(mockArticles[0]);
-
-    // Articles should remain unchanged since favorite toggle is not implemented yet
-    expect(component.articles().length).toBe(2);
-  });
-
   it('should call ArticlesService.getArticles with pagination parameters', async () => {
     mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
 
     await render(ArticleList, {
-      providers: [{ provide: ArticlesService, useValue: mockArticlesService }],
+      providers: defaultProviders,
     });
 
     expect(mockArticlesService.getArticles).toHaveBeenCalledWith({ limit: 10, offset: 0 });
+  });
+
+  describe('onFavoriteToggle', () => {
+    it('should redirect to login when user is not authenticated', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(false);
+
+      const { fixture, debugElement } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const router = debugElement.injector.get(Router);
+      const navigateSpy = jest.spyOn(router, 'navigate');
+
+      const component = fixture.componentInstance;
+      component.onFavoriteToggle(mockArticles[0]);
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+      expect(mockArticlesService.favoriteArticle).not.toHaveBeenCalled();
+      expect(mockArticlesService.unfavoriteArticle).not.toHaveBeenCalled();
+    });
+
+    it('should call favoriteArticle when article is not favorited', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[0], favorited: true, favoritesCount: 6 };
+      const articleResponse: ArticleResponse = { article: updatedArticle };
+      mockArticlesService.favoriteArticle.mockReturnValue(of(articleResponse));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+      component.onFavoriteToggle(mockArticles[0]);
+
+      expect(mockArticlesService.favoriteArticle).toHaveBeenCalledWith('first-article');
+      expect(mockArticlesService.unfavoriteArticle).not.toHaveBeenCalled();
+    });
+
+    it('should call unfavoriteArticle when article is favorited', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[1], favorited: false, favoritesCount: 11 };
+      const articleResponse: ArticleResponse = { article: updatedArticle };
+      mockArticlesService.unfavoriteArticle.mockReturnValue(of(articleResponse));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+      component.onFavoriteToggle(mockArticles[1]);
+
+      expect(mockArticlesService.unfavoriteArticle).toHaveBeenCalledWith('second-article');
+      expect(mockArticlesService.favoriteArticle).not.toHaveBeenCalled();
+    });
+
+    it('should update article state after successful favorite', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[0], favorited: true, favoritesCount: 6 };
+      const articleResponse: ArticleResponse = { article: updatedArticle };
+      mockArticlesService.favoriteArticle.mockReturnValue(of(articleResponse));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+
+      await waitFor(() => {
+        expect(component.articles()[0].favorited).toBe(false);
+        expect(component.articles()[0].favoritesCount).toBe(5);
+      });
+
+      component.onFavoriteToggle(mockArticles[0]);
+
+      await waitFor(() => {
+        expect(component.articles()[0].favorited).toBe(true);
+        expect(component.articles()[0].favoritesCount).toBe(6);
+      });
+    });
+
+    it('should update article state after successful unfavorite', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[1], favorited: false, favoritesCount: 11 };
+      const articleResponse: ArticleResponse = { article: updatedArticle };
+      mockArticlesService.unfavoriteArticle.mockReturnValue(of(articleResponse));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+
+      await waitFor(() => {
+        expect(component.articles()[1].favorited).toBe(true);
+        expect(component.articles()[1].favoritesCount).toBe(12);
+      });
+
+      component.onFavoriteToggle(mockArticles[1]);
+
+      await waitFor(() => {
+        expect(component.articles()[1].favorited).toBe(false);
+        expect(component.articles()[1].favoritesCount).toBe(11);
+      });
+    });
+
+    it('should only update the toggled article, not others', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[0], favorited: true, favoritesCount: 6 };
+      const articleResponse: ArticleResponse = { article: updatedArticle };
+      mockArticlesService.favoriteArticle.mockReturnValue(of(articleResponse));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+
+      await waitFor(() => {
+        expect(component.articles().length).toBe(2);
+      });
+
+      component.onFavoriteToggle(mockArticles[0]);
+
+      await waitFor(() => {
+        expect(component.articles()[0].favorited).toBe(true);
+        // Second article should remain unchanged
+        expect(component.articles()[1].favorited).toBe(true);
+        expect(component.articles()[1].favoritesCount).toBe(12);
+        expect(component.articles()[1].slug).toBe('second-article');
+      });
+    });
+
+    it('should handle error when favorite toggle fails', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const error = new Error('Failed to favorite article');
+      mockArticlesService.favoriteArticle.mockReturnValue(throwError(() => error));
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+
+      await waitFor(() => {
+        expect(component.articles().length).toBe(2);
+      });
+
+      component.onFavoriteToggle(mockArticles[0]);
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Error toggling favorite:', error);
+      });
+
+      // Article state should remain unchanged on error
+      expect(component.articles()[0].favorited).toBe(false);
+      expect(component.articles()[0].favoritesCount).toBe(5);
+
+      consoleErrorSpy.mockRestore();
+    });
+
+    it('should handle multiple favorite toggles on different articles', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle1 = { ...mockArticles[0], favorited: true, favoritesCount: 6 };
+      const updatedArticle2 = { ...mockArticles[1], favorited: false, favoritesCount: 11 };
+      mockArticlesService.favoriteArticle.mockReturnValue(of({ article: updatedArticle1 }));
+      mockArticlesService.unfavoriteArticle.mockReturnValue(of({ article: updatedArticle2 }));
+
+      const { fixture } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const component = fixture.componentInstance;
+
+      await waitFor(() => {
+        expect(component.articles().length).toBe(2);
+      });
+
+      component.onFavoriteToggle(mockArticles[0]);
+      component.onFavoriteToggle(mockArticles[1]);
+
+      await waitFor(() => {
+        expect(component.articles()[0].favorited).toBe(true);
+        expect(component.articles()[0].favoritesCount).toBe(6);
+        expect(component.articles()[1].favorited).toBe(false);
+        expect(component.articles()[1].favoritesCount).toBe(11);
+      });
+
+      expect(mockArticlesService.favoriteArticle).toHaveBeenCalledWith('first-article');
+      expect(mockArticlesService.unfavoriteArticle).toHaveBeenCalledWith('second-article');
+    });
+
+    it('should not navigate to login when user is authenticated', async () => {
+      mockArticlesService.getArticles.mockReturnValue(of(mockArticlesResponse));
+      mockAuthService.isAuthenticated.mockReturnValue(true);
+
+      const updatedArticle = { ...mockArticles[0], favorited: true, favoritesCount: 6 };
+      mockArticlesService.favoriteArticle.mockReturnValue(of({ article: updatedArticle }));
+
+      const { fixture, debugElement } = await render(ArticleList, {
+        providers: defaultProviders,
+      });
+
+      const router = debugElement.injector.get(Router);
+      const navigateSpy = jest.spyOn(router, 'navigate');
+
+      const component = fixture.componentInstance;
+      component.onFavoriteToggle(mockArticles[0]);
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+    });
   });
 });
