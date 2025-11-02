@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, map, catchError, of, startWith, merge, filter, tap, EMPTY } from 'rxjs';
+import { switchMap, map, catchError, of, startWith, merge, filter } from 'rxjs';
 import { ProfileService } from './profile.service';
 import { ArticlesService } from '../articles/articles.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -52,6 +52,9 @@ export class Profile {
   // Subject to trigger follow/unfollow action
   private followAction$ = new Subject<{ username: string; shouldFollow: boolean }>();
 
+  // Subject to trigger favorite/unfavorite action
+  private favoriteAction$ = new Subject<{ slug: string; shouldFavorite: boolean }>();
+
   // Check if viewing own profile
   isOwnProfile = computed(() => {
     const user = this.currentUser();
@@ -69,19 +72,15 @@ export class Profile {
 
         // Filter follow actions for current username only
         const followActionsForUser$ = this.followAction$.pipe(
-          tap((action) => console.log('Follow action triggered:', action)),
           filter(({ username: actionUsername }) => actionUsername === username),
-          tap(() => console.log('Follow action passed filter for username:', username)),
           switchMap(({ shouldFollow }) => {
-            console.log('Calling API, shouldFollow:', shouldFollow);
-            return (shouldFollow
-              ? this.profileService.followUser(username)
-              : this.profileService.unfollowUser(username)
+            return (
+              shouldFollow
+                ? this.profileService.followUser(username)
+                : this.profileService.unfollowUser(username)
             ).pipe(
-              tap((response) => console.log('API response:', response)),
               map((response) => ({ profile: response.profile, isLoading: false, error: null })),
               catchError((error) => {
-                console.error('Follow error:', error);
                 return of({
                   profile: null,
                   isLoading: false,
@@ -122,6 +121,36 @@ export class Profile {
     tab: this.currentTab(),
   }));
 
+  // Signal to accumulate article updates from favorite actions
+  private articleUpdatesMap = signal<Map<string, Article>>(new Map());
+
+  // Track article updates from favorite actions using toSignal
+  // We need to keep this signal alive to process favorite actions, even though we don't read its value
+  private _favoriteUpdateEffect = toSignal(
+    this.favoriteAction$.pipe(
+      switchMap(({ slug, shouldFavorite }) => {
+        return (
+          shouldFavorite
+            ? this.articlesService.favoriteArticle(slug)
+            : this.articlesService.unfavoriteArticle(slug)
+        ).pipe(
+          map((response) => {
+            // Update the accumulated map
+            const currentMap = new Map(this.articleUpdatesMap());
+            currentMap.set(slug, response.article);
+            this.articleUpdatesMap.set(currentMap);
+            return null;
+          }),
+          catchError((error) => {
+            console.error('Error toggling favorite:', error);
+            return of(null);
+          })
+        );
+      })
+    ),
+    { initialValue: null }
+  );
+
   private articlesState = toSignal(
     toObservable(this.articlesParams).pipe(
       switchMap(({ username, tab }) => {
@@ -130,6 +159,9 @@ export class Profile {
         }
 
         const params = tab === 'my-articles' ? { author: username } : { favorited: username };
+
+        // Clear article updates when params change
+        this.articleUpdatesMap.set(new Map());
 
         return this.articlesService.getArticles(params).pipe(
           map((response) => ({ articles: response.articles, isLoading: false })),
@@ -141,7 +173,18 @@ export class Profile {
     { initialValue: { articles: [], isLoading: true } as ArticlesState }
   );
 
-  articles = computed(() => this.articlesState().articles);
+  articles = computed(() => {
+    const baseArticles = this.articlesState().articles;
+    const updates = this.articleUpdatesMap();
+
+    if (updates.size === 0) {
+      return baseArticles;
+    }
+
+    // Apply all accumulated updates
+    return baseArticles.map((article) => updates.get(article.slug) || article);
+  });
+
   isLoadingArticles = computed(() => this.articlesState().isLoading);
 
   selectTab(event: Event, tab: TabType): void {
@@ -169,7 +212,15 @@ export class Profile {
   }
 
   onFavoriteToggle(article: Article): void {
-    // Handle favorite toggle - to be implemented
-    console.log('Favorite toggled for:', article.slug);
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Trigger favorite/unfavorite action via Subject
+    this.favoriteAction$.next({
+      slug: article.slug,
+      shouldFavorite: !article.favorited,
+    });
   }
 }
