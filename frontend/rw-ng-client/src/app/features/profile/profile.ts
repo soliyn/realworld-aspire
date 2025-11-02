@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { switchMap, map, catchError, of, startWith, merge } from 'rxjs';
 import { ProfileService } from './profile.service';
@@ -8,7 +8,6 @@ import { AuthService } from '../../core/services/auth.service';
 import { Profile as ProfileModel } from '../../core/models/profile.model';
 import { Article } from '../../core/models/article.model';
 import { ArticleListItem } from '../articles/article-list-item/article-list-item';
-import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 
 type TabType = 'my-articles' | 'favorited-articles';
@@ -26,7 +25,7 @@ type ArticlesState = {
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, ArticleListItem],
+  imports: [ArticleListItem],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })
@@ -49,8 +48,8 @@ export class Profile {
   // Current user for authentication checks
   currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
 
-  // Subject to trigger profile reload after follow/unfollow
-  private profileReload$ = new Subject<ProfileModel>();
+  // Subject to trigger follow/unfollow action
+  private followAction$ = new Subject<{ username: string; shouldFollow: boolean }>();
 
   // Check if viewing own profile
   isOwnProfile = computed(() => {
@@ -58,6 +57,25 @@ export class Profile {
     const profileUsername = this.username();
     return user?.username === profileUsername;
   });
+
+  // Handle follow/unfollow actions
+  private followActionResult$ = this.followAction$.pipe(
+    switchMap(({ username, shouldFollow }) =>
+      (shouldFollow
+        ? this.profileService.followUser(username)
+        : this.profileService.unfollowUser(username)
+      ).pipe(
+        map((response) => ({ profile: response.profile, isLoading: false, error: null })),
+        catchError((error) =>
+          of({
+            profile: null,
+            isLoading: false,
+            error: error.message || 'Failed to toggle follow',
+          })
+        )
+      )
+    )
+  );
 
   // Load profile data
   private profileState = toSignal(
@@ -80,7 +98,7 @@ export class Profile {
           );
         })
       ),
-      this.profileReload$.pipe(map((profile) => ({ profile, isLoading: false, error: null })))
+      this.followActionResult$
     ),
     { initialValue: { profile: null, isLoading: true, error: null } as ProfileState }
   );
@@ -129,18 +147,10 @@ export class Profile {
 
     if (!profileData || !username) return;
 
-    const action = profileData.following
-      ? this.profileService.unfollowUser(username)
-      : this.profileService.followUser(username);
-
-    action.subscribe({
-      next: (response) => {
-        // Trigger profile reload by emitting the updated profile
-        this.profileReload$.next(response.profile);
-      },
-      error: (error) => {
-        console.error('Failed to toggle follow:', error);
-      },
+    // Trigger follow/unfollow action via Subject
+    this.followAction$.next({
+      username,
+      shouldFollow: !profileData.following,
     });
   }
 

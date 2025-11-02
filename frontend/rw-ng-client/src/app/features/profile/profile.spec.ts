@@ -339,8 +339,6 @@ describe('Profile', () => {
         throwError(() => ({ message: 'Follow failed' }))
       );
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
       const { fixture } = await renderComponent();
 
       await waitFor(() => {
@@ -351,12 +349,9 @@ describe('Profile', () => {
       fixture.componentInstance.toggleFollow(event);
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Failed to toggle follow:', {
-          message: 'Follow failed',
-        });
+        expect(fixture.componentInstance.profileError()).toBe('Follow failed');
+        expect(fixture.componentInstance.profile()).toBeNull();
       });
-
-      consoleSpy.mockRestore();
     });
 
     it('should not call service if profile is null', async () => {
