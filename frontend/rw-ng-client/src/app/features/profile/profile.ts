@@ -26,7 +26,7 @@ type ArticlesState = {
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, RouterLink, ArticleListItem],
+  imports: [CommonModule, ArticleListItem],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
 })

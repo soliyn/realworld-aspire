@@ -102,11 +102,12 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 // Add CORS for frontend
+var angularOrigin = builder.Configuration["services:angular:http:0"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins(angularOrigin!)
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
