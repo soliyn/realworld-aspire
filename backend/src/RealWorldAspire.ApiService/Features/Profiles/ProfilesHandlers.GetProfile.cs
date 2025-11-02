@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
-using RealWorldAspire.ApiService.Extensions;
 
 namespace RealWorldAspire.ApiService.Features.Profiles;
 
@@ -16,10 +15,18 @@ public static partial class ProfilesHandlers
         RealWorldDbContext dbContext
     )
     {
-        var currentUser = await userManager.GetUserOrThrow(principal);
+        var currentUser = await userManager.GetUserAsync(principal);
+
         var user = await dbContext.Users
             .Where(u => u.UserName == username)
-            .Select(x => new { x.Id, x.UserName, x.Bio, x.Image, Following = x.Followers.Any(uf => uf.FollowerId == currentUser.Id) })
+            .Select(x => new
+            {
+                x.Id,
+                x.UserName,
+                x.Bio,
+                x.Image,
+                Following = currentUser != null && x.Followers.Any(uf => uf.FollowerId == currentUser.Id)
+            })
             .FirstOrDefaultAsync()
         ;
         if (user == null)

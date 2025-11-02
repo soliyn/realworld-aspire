@@ -1,7 +1,7 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, map, catchError, of, startWith, merge } from 'rxjs';
+import { switchMap, map, catchError, of, startWith, merge, filter, tap, EMPTY } from 'rxjs';
 import { ProfileService } from './profile.service';
 import { ArticlesService } from '../articles/articles.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -28,6 +28,7 @@ type ArticlesState = {
   imports: [ArticleListItem],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Profile {
   private route = inject(ActivatedRoute);
@@ -58,34 +59,42 @@ export class Profile {
     return user?.username === profileUsername;
   });
 
-  // Handle follow/unfollow actions
-  private followActionResult$ = this.followAction$.pipe(
-    switchMap(({ username, shouldFollow }) =>
-      (shouldFollow
-        ? this.profileService.followUser(username)
-        : this.profileService.unfollowUser(username)
-      ).pipe(
-        map((response) => ({ profile: response.profile, isLoading: false, error: null })),
-        catchError((error) =>
-          of({
-            profile: null,
-            isLoading: false,
-            error: error.message || 'Failed to toggle follow',
-          })
-        )
-      )
-    )
-  );
-
   // Load profile data
   private profileState = toSignal(
-    merge(
-      toObservable(this.username).pipe(
-        switchMap((username) => {
-          if (!username) {
-            return of({ profile: null, isLoading: false, error: 'No username provided' });
-          }
-          return this.profileService.getProfile(username).pipe(
+    toObservable(this.username).pipe(
+      switchMap((username) => {
+        if (!username) {
+          return of({ profile: null, isLoading: false, error: 'No username provided' });
+        }
+
+        // Filter follow actions for current username only
+        const followActionsForUser$ = this.followAction$.pipe(
+          tap((action) => console.log('Follow action triggered:', action)),
+          filter(({ username: actionUsername }) => actionUsername === username),
+          tap(() => console.log('Follow action passed filter for username:', username)),
+          switchMap(({ shouldFollow }) => {
+            console.log('Calling API, shouldFollow:', shouldFollow);
+            return (shouldFollow
+              ? this.profileService.followUser(username)
+              : this.profileService.unfollowUser(username)
+            ).pipe(
+              tap((response) => console.log('API response:', response)),
+              map((response) => ({ profile: response.profile, isLoading: false, error: null })),
+              catchError((error) => {
+                console.error('Follow error:', error);
+                return of({
+                  profile: null,
+                  isLoading: false,
+                  error: error.message || 'Failed to toggle follow',
+                });
+              }),
+              startWith({ profile: null, isLoading: true, error: null } as ProfileState)
+            );
+          })
+        );
+
+        return merge(
+          this.profileService.getProfile(username).pipe(
             map((response) => ({ profile: response.profile, isLoading: false, error: null })),
             catchError((error) =>
               of({
@@ -95,10 +104,10 @@ export class Profile {
               })
             ),
             startWith({ profile: null, isLoading: true, error: null } as ProfileState)
-          );
-        })
-      ),
-      this.followActionResult$
+          ),
+          followActionsForUser$
+        );
+      })
     ),
     { initialValue: { profile: null, isLoading: true, error: null } as ProfileState }
   );
