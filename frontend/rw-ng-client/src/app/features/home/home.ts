@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TagList } from '../tag-list/tag-list';
 import { ArticleList } from '../articles/article-list/article-list';
 import { FeedStateService } from '../../core/services/feed-state.service';
@@ -8,6 +8,7 @@ import { FeedStateService } from '../../core/services/feed-state.service';
   imports: [TagList, ArticleList],
   templateUrl: './home.html',
   styleUrl: './home.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home {
   private feedStateService = inject(FeedStateService);

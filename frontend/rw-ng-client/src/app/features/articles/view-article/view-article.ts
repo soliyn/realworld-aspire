@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,6 +15,7 @@ import { Comment } from '../../../core/models/comment.model';
   imports: [DatePipe, RouterLink, ReactiveFormsModule],
   templateUrl: './view-article.html',
   styleUrl: './view-article.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewArticle implements OnInit {
   private articlesService = inject(ArticlesService);

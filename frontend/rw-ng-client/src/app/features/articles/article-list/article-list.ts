@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, computed, signal, effect } from '@angular/core';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
 import { map, startWith, catchError, of, switchMap, tap } from 'rxjs';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ type ArticlesState = {
   imports: [ArticleListItem, Paginator],
   templateUrl: './article-list.html',
   styleUrl: './article-list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticleList {
   private articlesService = inject(ArticlesService);

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Article } from '../../../core/models/article.model';
@@ -8,6 +8,7 @@ import { Article } from '../../../core/models/article.model';
   imports: [DatePipe, RouterLink],
   templateUrl: './article-list-item.html',
   styleUrl: './article-list-item.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ArticleListItem {
   article = input.required<Article>();

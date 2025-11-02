@@ -1,10 +1,11 @@
-import { Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-paginator',
   imports: [],
   templateUrl: './paginator.html',
   styleUrl: './paginator.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Paginator {
   totalCount = input.required<number>();
