@@ -8,6 +8,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { marked } from 'marked';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../profile/profile.service';
 import { Article } from '../../../core/models/article.model';
 import { Comment } from '../../../core/models/comment.model';
 import { NotFound } from '../../not-found/not-found';
@@ -22,6 +23,7 @@ import { NotFound } from '../../not-found/not-found';
 export class ViewArticle implements OnInit {
   private articlesService = inject(ArticlesService);
   private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -176,9 +178,28 @@ export class ViewArticle implements OnInit {
       return;
     }
 
-    // Note: ProfileService would handle this, but since we don't have it,
-    // we'll need to add it when profile service is available
-    console.log('Toggle follow for:', article.author.username);
+    const operation = article.author.following
+      ? this.profileService.unfollowUser(article.author.username)
+      : this.profileService.followUser(article.author.username);
+
+    operation
+      .pipe(
+        tap((response) => {
+          // Update the article's author following status
+          const currentArticle = this.article();
+          if (currentArticle) {
+            this.articleSignal.set({
+              ...currentArticle,
+              author: response.profile
+            });
+          }
+        }),
+        catchError((error) => {
+          console.error('Error toggling follow:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   onEditArticle(): void {

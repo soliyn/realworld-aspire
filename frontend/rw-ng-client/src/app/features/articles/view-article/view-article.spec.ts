@@ -3,6 +3,7 @@ import { of, throwError, BehaviorSubject } from 'rxjs';
 import { ViewArticle } from './view-article';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../profile/profile.service';
 import { Article } from '../../../core/models/article.model';
 import { Comment } from '../../../core/models/comment.model';
 import { Profile } from '../../../core/models/profile.model';
@@ -70,6 +71,12 @@ describe('ViewArticle', () => {
     deleteComment: jest.fn(),
   };
 
+  const mockProfileService = {
+    getProfile: jest.fn(),
+    followUser: jest.fn(),
+    unfollowUser: jest.fn(),
+  };
+
   let mockRouter: any;
   let currentUserSubject: BehaviorSubject<any>;
 
@@ -90,6 +97,7 @@ describe('ViewArticle', () => {
       ],
       providers: [
         { provide: ArticlesService, useValue: mockArticlesService },
+        { provide: ProfileService, useValue: mockProfileService },
         {
           provide: AuthService,
           useValue: {
@@ -448,6 +456,88 @@ describe('ViewArticle', () => {
       await waitFor(() => {
         expect(screen.getAllByText(/Unfollow johndoe/).length).toBeGreaterThan(0);
       });
+    });
+
+    it('should follow author when follow button is clicked', async () => {
+      const followedProfile = { ...mockProfile, following: true };
+      mockProfileService.followUser.mockReturnValue(of({ profile: followedProfile }));
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      await waitFor(() => {
+        expect(mockProfileService.followUser).toHaveBeenCalledWith('johndoe');
+        expect(fixture.componentInstance.article()?.author.following).toBe(true);
+      });
+    });
+
+    it('should unfollow author when unfollow button is clicked', async () => {
+      const followedArticle = {
+        ...mockArticle,
+        author: { ...mockProfile, following: true },
+      };
+      const unfollowedProfile = { ...mockProfile, following: false };
+
+      mockArticlesService.getArticle.mockReturnValue(of({ article: followedArticle }));
+      mockProfileService.unfollowUser.mockReturnValue(of({ profile: unfollowedProfile }));
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const unfollowButton = screen.getAllByText(/Unfollow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(unfollowButton);
+      });
+
+      await waitFor(() => {
+        expect(mockProfileService.unfollowUser).toHaveBeenCalledWith('johndoe');
+        expect(fixture.componentInstance.article()?.author.following).toBe(false);
+      });
+    });
+
+    it('should redirect to login when not authenticated and follow button is clicked', async () => {
+      await renderComponent('test-article', null);
+
+      const navigateSpy = jest.spyOn(mockRouter, 'navigate');
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+      expect(mockProfileService.followUser).not.toHaveBeenCalled();
+    });
+
+    it('should handle follow error gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      mockProfileService.followUser.mockReturnValue(
+        throwError(() => new Error('Failed to follow'))
+      );
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Error toggling follow:',
+          expect.any(Error)
+        );
+      });
+
+      consoleErrorSpy.mockRestore();
     });
   });
 
