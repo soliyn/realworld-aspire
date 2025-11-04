@@ -1,4 +1,6 @@
-@if (isLoadingArticle()) {
+@if (isNotFound()) {
+  <app-not-found />
+} @else if (isLoadingArticle()) {
   <div class="article-page">
     <div class="container page">
       <div class="row">

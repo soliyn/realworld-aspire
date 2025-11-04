@@ -3,16 +3,18 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, tap, switchMap, map } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { marked } from 'marked';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Article } from '../../../core/models/article.model';
 import { Comment } from '../../../core/models/comment.model';
+import { NotFound } from '../../not-found/not-found';
 
 @Component({
   selector: 'app-view-article',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, NotFound],
   templateUrl: './view-article.html',
   styleUrl: './view-article.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,15 +25,49 @@ export class ViewArticle implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  // State
-  article = signal<Article | null>(null);
+  // Declarative article loading
+  private slug$ = this.route.paramMap.pipe(
+    map(params => params.get('slug'))
+  );
+
+  private articleResponse = toSignal(
+    this.slug$.pipe(
+      switchMap(slug => {
+        if (!slug) {
+          this.router.navigate(['/']);
+          return of({ article: null, error: null, loading: false, notFound: false });
+        }
+        return this.articlesService.getArticle(slug).pipe(
+          map(response => ({ article: response.article, error: null, loading: false, notFound: false })),
+          catchError((error: HttpErrorResponse) => {
+            const isNotFound = error.status === 404;
+            return of({
+              article: null,
+              error: isNotFound ? null : 'Failed to load article. Please try again.' as string | null,
+              loading: false,
+              notFound: isNotFound
+            });
+          })
+        );
+      })
+    ),
+    { initialValue: { article: null, error: null, loading: true, notFound: false } }
+  );
+
+  // Writable signal for article updates (favorite/unfavorite)
+  private articleSignal = signal<Article | null>(null);
+
+  // State derived from declarative loading
+  article = computed(() => this.articleSignal() ?? this.articleResponse().article);
+  isLoadingArticle = computed(() => this.articleResponse().loading);
+  articleError = computed(() => this.articleResponse().error);
+  isNotFound = computed(() => this.articleResponse().notFound);
+
   comments = signal<Comment[]>([]);
-  isLoadingArticle = signal(true);
   isLoadingComments = signal(true);
   isDeletingArticle = signal(false);
   isSubmittingComment = signal(false);
   isDeletingComment = signal<number | null>(null);
-  articleError = signal<string | null>(null);
   commentsError = signal<string | null>(null);
 
   // Form control for new comment
@@ -81,34 +117,9 @@ export class ViewArticle implements OnInit {
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
-    if (!slug) {
-      this.router.navigate(['/']);
-      return;
+    if (slug) {
+      this.loadComments(slug);
     }
-
-    this.loadArticle(slug);
-    this.loadComments(slug);
-  }
-
-  private loadArticle(slug: string): void {
-    this.isLoadingArticle.set(true);
-    this.articleError.set(null);
-
-    this.articlesService
-      .getArticle(slug)
-      .pipe(
-        tap((response) => {
-          this.article.set(response.article);
-          this.isLoadingArticle.set(false);
-        }),
-        catchError((error) => {
-          console.error('Error loading article:', error);
-          this.articleError.set('Failed to load article. It may not exist.');
-          this.isLoadingArticle.set(false);
-          return of(null);
-        })
-      )
-      .subscribe();
   }
 
   private loadComments(slug: string): void {
@@ -146,7 +157,7 @@ export class ViewArticle implements OnInit {
     operation
       .pipe(
         tap((response) => {
-          this.article.set(response.article);
+          this.articleSignal.set(response.article);
         }),
         catchError((error) => {
           console.error('Error toggling favorite:', error);
