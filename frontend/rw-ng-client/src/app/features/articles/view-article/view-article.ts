@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, tap, switchMap, map } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -70,10 +70,12 @@ export class ViewArticle implements OnInit {
   isDeletingComment = signal<number | null>(null);
   commentsError = signal<string | null>(null);
 
-  // Form control for new comment
-  commentControl = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.minLength(1)],
+  // Form group for new comment
+  commentForm = new FormGroup({
+    body: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(1)],
+    }),
   });
 
   // Current user
@@ -105,12 +107,12 @@ export class ViewArticle implements OnInit {
   });
 
   constructor() {
-    // Control the disabled state of commentControl through the FormControl API
+    // Control the disabled state of commentForm through the FormGroup API
     effect(() => {
       if (this.isSubmittingComment()) {
-        this.commentControl.disable();
+        this.commentForm.disable();
       } else {
-        this.commentControl.enable();
+        this.commentForm.enable();
       }
     });
   }
@@ -216,11 +218,11 @@ export class ViewArticle implements OnInit {
 
   onSubmitComment(): void {
     const article = this.article();
-    if (!article || !this.isAuthenticated() || this.commentControl.invalid) {
+    if (!article || !this.isAuthenticated() || this.commentForm.invalid) {
       return;
     }
 
-    const commentBody = this.commentControl.value.trim();
+    const commentBody = this.commentForm.value.body?.trim();
     if (!commentBody) {
       return;
     }
@@ -234,7 +236,7 @@ export class ViewArticle implements OnInit {
           // Add the new comment to the top of the list
           this.comments.update((comments) => [response.comment, ...comments]);
           // Clear the form
-          this.commentControl.reset();
+          this.commentForm.reset();
           this.isSubmittingComment.set(false);
         }),
         catchError((error) => {

@@ -272,8 +272,8 @@ describe('ViewArticle', () => {
         expect(fixture.componentInstance.article()).toBeTruthy();
       });
 
-      // Set the comment value directly on the control
-      fixture.componentInstance.commentControl.setValue('New comment');
+      // Set the comment value directly on the form control
+      fixture.componentInstance.commentForm.controls.body.setValue('New comment');
       fixture.detectChanges();
 
       // Manually call the submit method since form submission can be flaky in tests
