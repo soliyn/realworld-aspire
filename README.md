@@ -32,6 +32,6 @@ See more in:
 
 [See more about Aspire](https://learn.microsoft.com/en-us/dotnet/aspire/get-started/aspire-overview)
 
-![Aspire Dashboard Resources]("./Aspire Dashboard Resources.png")
+![Aspire Dashboard Resources](./Aspire%20Dashboard%20Resources.png)
 
-![Aspire Dashboard Traces]("./Aspire Dashboard Traces.png")
+![Aspire Dashboard Traces](./Aspire%20Dashboard%20Traces.png)
