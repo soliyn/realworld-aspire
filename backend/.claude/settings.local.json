@@ -8,7 +8,11 @@
       "Bash(dotnet clean:*)",
       "Bash(dotnet ef migrations add:*)",
       "WebSearch",
-      "WebFetch(domain:docs.realworld.show)"
+      "WebFetch(domain:docs.realworld.show)",
+      "Bash(tree:*)",
+      "Bash(nul)",
+      "Bash(powershell -Command \"Get-Content ''C:\\olen\\LabProjects\\realworld-aspire\\backend\\README.md'' -Raw | Select-String -Pattern ''backend/'' -Context 1,5\")",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
