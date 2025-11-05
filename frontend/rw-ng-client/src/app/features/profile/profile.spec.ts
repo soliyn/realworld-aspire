@@ -107,6 +107,7 @@ describe('Profile', () => {
           useValue: {
             currentUser$: currentUserSubject.asObservable(),
             currentUserValue: user,
+            isAuthenticated: jest.fn().mockReturnValue(!!user),
           },
         },
         {
@@ -339,8 +340,6 @@ describe('Profile', () => {
         throwError(() => ({ message: 'Follow failed' }))
       );
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-
       const { fixture } = await renderComponent();
 
       await waitFor(() => {
@@ -351,12 +350,9 @@ describe('Profile', () => {
       fixture.componentInstance.toggleFollow(event);
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Failed to toggle follow:', {
-          message: 'Follow failed',
-        });
+        expect(fixture.componentInstance.profileError()).toBe('Follow failed');
+        expect(fixture.componentInstance.profile()).toBeNull();
       });
-
-      consoleSpy.mockRestore();
     });
 
     it('should not call service if profile is null', async () => {
@@ -407,8 +403,24 @@ describe('Profile', () => {
   });
 
   describe('Favorite Toggle', () => {
-    it('should handle favorite toggle', async () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+    it('should redirect to login when not authenticated', async () => {
+      const { fixture } = await renderComponent('otheruser', null);
+      mockRouter = fixture.debugElement.injector.get(Router);
+      jest.spyOn(mockRouter, 'navigate');
+
+      await waitFor(() => {
+        expect(fixture.componentInstance.profile()).toBeTruthy();
+      });
+
+      fixture.componentInstance.onFavoriteToggle(mockArticle);
+
+      expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
+      expect(mockArticlesService.favoriteArticle).not.toHaveBeenCalled();
+    });
+
+    it('should favorite article when not favorited', async () => {
+      const updatedArticle = { ...mockArticle, favorited: true, favoritesCount: 1 };
+      mockArticlesService.favoriteArticle.mockReturnValue(of({ article: updatedArticle }));
 
       const { fixture } = await renderComponent();
 
@@ -418,7 +430,58 @@ describe('Profile', () => {
 
       fixture.componentInstance.onFavoriteToggle(mockArticle);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Favorite toggled for:', 'test-article');
+      await waitFor(() => {
+        expect(mockArticlesService.favoriteArticle).toHaveBeenCalledWith('test-article');
+        expect(fixture.componentInstance.articles()[0].favorited).toBe(true);
+        expect(fixture.componentInstance.articles()[0].favoritesCount).toBe(1);
+      });
+    });
+
+    it('should unfavorite article when already favorited', async () => {
+      const favoritedArticle = { ...mockArticle, favorited: true, favoritesCount: 1 };
+      const updatedArticle = { ...mockArticle, favorited: false, favoritesCount: 0 };
+      mockArticlesService.getArticles.mockReturnValue(
+        of({ articles: [favoritedArticle], articlesCount: 1 })
+      );
+      mockArticlesService.unfavoriteArticle.mockReturnValue(of({ article: updatedArticle }));
+
+      const { fixture } = await renderComponent();
+
+      await waitFor(() => {
+        expect(fixture.componentInstance.profile()).toBeTruthy();
+        expect(fixture.componentInstance.articles()[0].favorited).toBe(true);
+      });
+
+      fixture.componentInstance.onFavoriteToggle(favoritedArticle);
+
+      await waitFor(() => {
+        expect(mockArticlesService.unfavoriteArticle).toHaveBeenCalledWith('test-article');
+        expect(fixture.componentInstance.articles()[0].favorited).toBe(false);
+        expect(fixture.componentInstance.articles()[0].favoritesCount).toBe(0);
+      });
+    });
+
+    it('should handle favorite toggle error', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      mockArticlesService.favoriteArticle.mockReturnValue(
+        throwError(() => new Error('Favorite failed'))
+      );
+
+      const { fixture } = await renderComponent();
+
+      await waitFor(() => {
+        expect(fixture.componentInstance.profile()).toBeTruthy();
+      });
+
+      fixture.componentInstance.onFavoriteToggle(mockArticle);
+
+      await waitFor(() => {
+        expect(consoleSpy).toHaveBeenCalledWith(
+          'Error toggling favorite:',
+          expect.any(Error)
+        );
+      });
+
       consoleSpy.mockRestore();
     });
   });

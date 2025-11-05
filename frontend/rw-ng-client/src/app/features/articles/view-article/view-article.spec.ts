@@ -3,10 +3,12 @@ import { of, throwError, BehaviorSubject } from 'rxjs';
 import { ViewArticle } from './view-article';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../profile/profile.service';
 import { Article } from '../../../core/models/article.model';
 import { Comment } from '../../../core/models/comment.model';
 import { Profile } from '../../../core/models/profile.model';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { NotFound } from '../../not-found/not-found';
 
 describe('ViewArticle', () => {
   const mockProfile: Profile = {
@@ -69,6 +71,12 @@ describe('ViewArticle', () => {
     deleteComment: jest.fn(),
   };
 
+  const mockProfileService = {
+    getProfile: jest.fn(),
+    followUser: jest.fn(),
+    unfollowUser: jest.fn(),
+  };
+
   let mockRouter: any;
   let currentUserSubject: BehaviorSubject<any>;
 
@@ -77,21 +85,19 @@ describe('ViewArticle', () => {
     currentUserSubject = new BehaviorSubject(null);
     mockArticlesService.getArticle.mockReturnValue(of({ article: mockArticle }));
     mockArticlesService.getComments.mockReturnValue(of({ comments: [mockComment] }));
-
-    // Create a fresh router mock before each test
     mockRouter = null;
   });
 
   const renderComponent = async (slug = 'test-article', user: any = null) => {
     currentUserSubject.next(user);
 
-    // Create router spy before component initialization
-    let routerSpy: any;
-
     const result = await render(ViewArticle, {
-      routes: [],
+      routes: [
+        { path: '404', component: NotFound },
+      ],
       providers: [
         { provide: ArticlesService, useValue: mockArticlesService },
+        { provide: ProfileService, useValue: mockProfileService },
         {
           provide: AuthService,
           useValue: {
@@ -106,20 +112,17 @@ describe('ViewArticle', () => {
                 get: () => slug,
               },
             },
+            paramMap: of({
+              get: () => slug,
+            }),
           },
         },
       ],
       componentProperties: {},
     });
 
-    // Get router after render and spy on it
+    // Get router after render for verification
     mockRouter = result.fixture.debugElement.injector.get(Router);
-
-    // For tests that need to verify navigation happened in ngOnInit,
-    // we check the router's internal state since the spy is set up too late
-    if (!routerSpy) {
-      routerSpy = jest.spyOn(mockRouter, 'navigate');
-    }
 
     return result;
   };
@@ -181,26 +184,29 @@ describe('ViewArticle', () => {
       });
     });
 
-    it('should display error when article fails to load', async () => {
-      // Mock console.error to suppress expected error output in test
-      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+    it('should display 404 component when article returns 404 status', async () => {
+      const notFoundError = { status: 404, statusText: 'Not Found' } as any;
+      mockArticlesService.getArticle.mockReturnValue(throwError(() => notFoundError));
 
-      mockArticlesService.getArticle.mockReturnValue(
-        throwError(() => new Error('Article not found'))
-      );
       await renderComponent();
+
+      // Wait for the 404 page to be displayed
       await waitFor(() => {
-        expect(screen.getByText('Failed to load article. It may not exist.')).toBeTruthy();
+        expect(screen.getByText('404')).toBeTruthy();
+        expect(screen.getByText('Page Not Found')).toBeTruthy();
       });
+    });
 
-      // Verify error was logged
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error loading article:',
-        expect.any(Error)
-      );
+    it('should display error message for non-404 errors', async () => {
+      const serverError = { status: 500, statusText: 'Internal Server Error' } as any;
+      mockArticlesService.getArticle.mockReturnValue(throwError(() => serverError));
 
-      // Restore console.error
-      consoleErrorSpy.mockRestore();
+      await renderComponent();
+
+      // Wait for the error message to be displayed
+      await waitFor(() => {
+        expect(screen.getByText('Failed to load article. Please try again.')).toBeTruthy();
+      });
     });
   });
 
@@ -274,8 +280,8 @@ describe('ViewArticle', () => {
         expect(fixture.componentInstance.article()).toBeTruthy();
       });
 
-      // Set the comment value directly on the control
-      fixture.componentInstance.commentControl.setValue('New comment');
+      // Set the comment value directly on the form control
+      fixture.componentInstance.commentForm.controls.body.setValue('New comment');
       fixture.detectChanges();
 
       // Manually call the submit method since form submission can be flaky in tests
@@ -381,13 +387,15 @@ describe('ViewArticle', () => {
       const authorUser = { ...mockUser, username: 'johndoe' };
       await renderComponent('test-article', authorUser);
 
+      const navigateSpy = jest.spyOn(mockRouter, 'navigate');
+
       await waitFor(() => {
         const editButtons = screen.getAllByText(/Edit Article/);
         const editButton = editButtons[0].closest('button') as HTMLButtonElement;
         fireEvent.click(editButton);
       });
 
-      expect(mockRouter.navigate).toHaveBeenCalledWith(['/editor', 'test-article']);
+      expect(navigateSpy).toHaveBeenCalledWith(['/editor', 'test-article']);
     });
 
     it('should delete article when delete button is clicked and confirmed', async () => {
@@ -397,6 +405,8 @@ describe('ViewArticle', () => {
 
       await renderComponent('test-article', authorUser);
 
+      const navigateSpy = jest.spyOn(mockRouter, 'navigate').mockResolvedValue(true);
+
       await waitFor(() => {
         const deleteButtons = screen.getAllByText(/Delete Article/);
         const deleteButton = deleteButtons[0].closest('button') as HTMLButtonElement;
@@ -405,7 +415,7 @@ describe('ViewArticle', () => {
 
       await waitFor(() => {
         expect(mockArticlesService.deleteArticle).toHaveBeenCalledWith('test-article');
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['/']);
+        expect(navigateSpy).toHaveBeenCalledWith(['/']);
       });
     });
 
@@ -447,12 +457,93 @@ describe('ViewArticle', () => {
         expect(screen.getAllByText(/Unfollow johndoe/).length).toBeGreaterThan(0);
       });
     });
+
+    it('should follow author when follow button is clicked', async () => {
+      const followedProfile = { ...mockProfile, following: true };
+      mockProfileService.followUser.mockReturnValue(of({ profile: followedProfile }));
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      await waitFor(() => {
+        expect(mockProfileService.followUser).toHaveBeenCalledWith('johndoe');
+        expect(fixture.componentInstance.article()?.author.following).toBe(true);
+      });
+    });
+
+    it('should unfollow author when unfollow button is clicked', async () => {
+      const followedArticle = {
+        ...mockArticle,
+        author: { ...mockProfile, following: true },
+      };
+      const unfollowedProfile = { ...mockProfile, following: false };
+
+      mockArticlesService.getArticle.mockReturnValue(of({ article: followedArticle }));
+      mockProfileService.unfollowUser.mockReturnValue(of({ profile: unfollowedProfile }));
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const unfollowButton = screen.getAllByText(/Unfollow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(unfollowButton);
+      });
+
+      await waitFor(() => {
+        expect(mockProfileService.unfollowUser).toHaveBeenCalledWith('johndoe');
+        expect(fixture.componentInstance.article()?.author.following).toBe(false);
+      });
+    });
+
+    it('should redirect to login when not authenticated and follow button is clicked', async () => {
+      await renderComponent('test-article', null);
+
+      const navigateSpy = jest.spyOn(mockRouter, 'navigate');
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+      expect(mockProfileService.followUser).not.toHaveBeenCalled();
+    });
+
+    it('should handle follow error gracefully', async () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      mockProfileService.followUser.mockReturnValue(
+        throwError(() => new Error('Failed to follow'))
+      );
+
+      const { fixture } = await renderComponent('test-article', mockUser);
+
+      await waitFor(() => {
+        const followButton = screen.getAllByText(/Follow johndoe/)[0]
+          .closest('button') as HTMLButtonElement;
+        fireEvent.click(followButton);
+      });
+
+      await waitFor(() => {
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Error toggling follow:',
+          expect.any(Error)
+        );
+      });
+
+      consoleErrorSpy.mockRestore();
+    });
   });
 
   describe('Navigation', () => {
     it('should not load article when slug is not provided', async () => {
-      // When slug is null, the component calls router.navigate(['/']) in ngOnInit
-      // and returns early without loading article data
+      // When slug is null, the component doesn't attempt to load article data
       const { fixture } = await renderComponent(null as any);
 
       // Verify the component didn't attempt to load article data
@@ -461,7 +552,7 @@ describe('ViewArticle', () => {
 
       // The component state should reflect that no article was loaded
       expect(fixture.componentInstance.article()).toBeNull();
-      expect(fixture.componentInstance.isLoadingArticle()).toBe(true); // Still in initial state
+      expect(fixture.componentInstance.isLoadingArticle()).toBe(false); // Loading completes immediately when no slug
     });
   });
 });

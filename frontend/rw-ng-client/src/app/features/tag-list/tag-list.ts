@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TagsService } from './tags.service';
 import { map, catchError, of, finalize } from 'rxjs';
@@ -8,7 +8,8 @@ import { FeedStateService } from '../../core/services/feed-state.service';
   selector: 'app-tag-list',
   imports: [],
   templateUrl: './tag-list.html',
-  styleUrl: './tag-list.scss'
+  styleUrl: './tag-list.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TagList {
   private tagsService = inject(TagsService);

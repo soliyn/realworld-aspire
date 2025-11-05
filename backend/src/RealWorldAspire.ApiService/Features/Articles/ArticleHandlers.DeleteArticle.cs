@@ -31,10 +31,19 @@ public static partial class ArticleHandlers
 
         async Task<IResult> Delete()
         {
+            await DeleteArticleComments();
+
             dbContext.Articles.Remove(article);
             await dbContext.SaveChangesAsync();
 
             return TypedResults.NoContent();
+        }
+
+        async Task DeleteArticleComments()
+        {
+            await dbContext.Comments
+                .Where(c => c.Article!.ArticleId == article.ArticleId)
+                .ExecuteDeleteAsync();
         }
     }
 }

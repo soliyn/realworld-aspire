@@ -7,16 +7,22 @@ var postgres = builder
     ;
 var postgresdb = postgres
     .WithDataVolume("postgres-data-volume")
-    // .WithDataBindMount(source: @"C:\Temp\Data", isReadOnly: false)
-    // .WithEnvironment("POSTGRES_PASSWORD", "mypassword")
     .AddDatabase("realworlddb")
     ;
 
 var apiService = builder.AddProject<Projects.RealWorldAspire_ApiService>("apiservice")
     .WithReference(postgresdb)
     .WaitFor(postgresdb)
-    // .WithEnvironment("ASPNETCORE_URLS", "http://localhost:5030")
     .WithHttpHealthCheck("/health")
     ;
+
+var angular = builder.AddNpmApp("angular", "../../../frontend/rw-ng-client")
+    .WithReference(apiService)
+    .WaitFor(apiService)
+    .WithHttpEndpoint(env: "PORT")
+    .WithExternalHttpEndpoints()
+    .PublishAsDockerFile();
+
+apiService.WithReference(angular);
 
 builder.Build().Run();

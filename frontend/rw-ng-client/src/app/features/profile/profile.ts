@@ -1,14 +1,13 @@
-import { Component, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal, computed } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { switchMap, map, catchError, of, startWith, merge } from 'rxjs';
+import { switchMap, map, catchError, of, startWith, merge, filter } from 'rxjs';
 import { ProfileService } from './profile.service';
 import { ArticlesService } from '../articles/articles.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Profile as ProfileModel } from '../../core/models/profile.model';
 import { Article } from '../../core/models/article.model';
 import { ArticleListItem } from '../articles/article-list-item/article-list-item';
-import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 
 type TabType = 'my-articles' | 'favorited-articles';
@@ -26,9 +25,10 @@ type ArticlesState = {
 
 @Component({
   selector: 'app-profile',
-  imports: [CommonModule, RouterLink, ArticleListItem],
+  imports: [ArticleListItem],
   templateUrl: './profile.html',
   styleUrl: './profile.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Profile {
   private route = inject(ActivatedRoute);
@@ -49,8 +49,11 @@ export class Profile {
   // Current user for authentication checks
   currentUser = toSignal(this.authService.currentUser$, { initialValue: null });
 
-  // Subject to trigger profile reload after follow/unfollow
-  private profileReload$ = new Subject<ProfileModel>();
+  // Subject to trigger follow/unfollow action
+  private followAction$ = new Subject<{ username: string; shouldFollow: boolean }>();
+
+  // Subject to trigger favorite/unfavorite action
+  private favoriteAction$ = new Subject<{ slug: string; shouldFavorite: boolean }>();
 
   // Check if viewing own profile
   isOwnProfile = computed(() => {
@@ -61,13 +64,36 @@ export class Profile {
 
   // Load profile data
   private profileState = toSignal(
-    merge(
-      toObservable(this.username).pipe(
-        switchMap((username) => {
-          if (!username) {
-            return of({ profile: null, isLoading: false, error: 'No username provided' });
-          }
-          return this.profileService.getProfile(username).pipe(
+    toObservable(this.username).pipe(
+      switchMap((username) => {
+        if (!username) {
+          return of({ profile: null, isLoading: false, error: 'No username provided' });
+        }
+
+        // Filter follow actions for current username only
+        const followActionsForUser$ = this.followAction$.pipe(
+          filter(({ username: actionUsername }) => actionUsername === username),
+          switchMap(({ shouldFollow }) => {
+            return (
+              shouldFollow
+                ? this.profileService.followUser(username)
+                : this.profileService.unfollowUser(username)
+            ).pipe(
+              map((response) => ({ profile: response.profile, isLoading: false, error: null })),
+              catchError((error) => {
+                return of({
+                  profile: null,
+                  isLoading: false,
+                  error: error.message || 'Failed to toggle follow',
+                });
+              }),
+              startWith({ profile: null, isLoading: true, error: null } as ProfileState)
+            );
+          })
+        );
+
+        return merge(
+          this.profileService.getProfile(username).pipe(
             map((response) => ({ profile: response.profile, isLoading: false, error: null })),
             catchError((error) =>
               of({
@@ -77,10 +103,10 @@ export class Profile {
               })
             ),
             startWith({ profile: null, isLoading: true, error: null } as ProfileState)
-          );
-        })
-      ),
-      this.profileReload$.pipe(map((profile) => ({ profile, isLoading: false, error: null })))
+          ),
+          followActionsForUser$
+        );
+      })
     ),
     { initialValue: { profile: null, isLoading: true, error: null } as ProfileState }
   );
@@ -95,6 +121,36 @@ export class Profile {
     tab: this.currentTab(),
   }));
 
+  // Signal to accumulate article updates from favorite actions
+  private articleUpdatesMap = signal<Map<string, Article>>(new Map());
+
+  // Track article updates from favorite actions using toSignal
+  // We need to keep this signal alive to process favorite actions, even though we don't read its value
+  private _favoriteUpdateEffect = toSignal(
+    this.favoriteAction$.pipe(
+      switchMap(({ slug, shouldFavorite }) => {
+        return (
+          shouldFavorite
+            ? this.articlesService.favoriteArticle(slug)
+            : this.articlesService.unfavoriteArticle(slug)
+        ).pipe(
+          map((response) => {
+            // Update the accumulated map
+            const currentMap = new Map(this.articleUpdatesMap());
+            currentMap.set(slug, response.article);
+            this.articleUpdatesMap.set(currentMap);
+            return null;
+          }),
+          catchError((error) => {
+            console.error('Error toggling favorite:', error);
+            return of(null);
+          })
+        );
+      })
+    ),
+    { initialValue: null }
+  );
+
   private articlesState = toSignal(
     toObservable(this.articlesParams).pipe(
       switchMap(({ username, tab }) => {
@@ -103,6 +159,9 @@ export class Profile {
         }
 
         const params = tab === 'my-articles' ? { author: username } : { favorited: username };
+
+        // Clear article updates when params change
+        this.articleUpdatesMap.set(new Map());
 
         return this.articlesService.getArticles(params).pipe(
           map((response) => ({ articles: response.articles, isLoading: false })),
@@ -114,7 +173,18 @@ export class Profile {
     { initialValue: { articles: [], isLoading: true } as ArticlesState }
   );
 
-  articles = computed(() => this.articlesState().articles);
+  articles = computed(() => {
+    const baseArticles = this.articlesState().articles;
+    const updates = this.articleUpdatesMap();
+
+    if (updates.size === 0) {
+      return baseArticles;
+    }
+
+    // Apply all accumulated updates
+    return baseArticles.map((article) => updates.get(article.slug) || article);
+  });
+
   isLoadingArticles = computed(() => this.articlesState().isLoading);
 
   selectTab(event: Event, tab: TabType): void {
@@ -129,18 +199,10 @@ export class Profile {
 
     if (!profileData || !username) return;
 
-    const action = profileData.following
-      ? this.profileService.unfollowUser(username)
-      : this.profileService.followUser(username);
-
-    action.subscribe({
-      next: (response) => {
-        // Trigger profile reload by emitting the updated profile
-        this.profileReload$.next(response.profile);
-      },
-      error: (error) => {
-        console.error('Failed to toggle follow:', error);
-      },
+    // Trigger follow/unfollow action via Subject
+    this.followAction$.next({
+      username,
+      shouldFollow: !profileData.following,
     });
   }
 
@@ -150,7 +212,15 @@ export class Profile {
   }
 
   onFavoriteToggle(article: Article): void {
-    // Handle favorite toggle - to be implemented
-    console.log('Favorite toggled for:', article.slug);
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    // Trigger favorite/unfavorite action via Subject
+    this.favoriteAction$.next({
+      slug: article.slug,
+      shouldFavorite: !article.favorited,
+    });
   }
 }

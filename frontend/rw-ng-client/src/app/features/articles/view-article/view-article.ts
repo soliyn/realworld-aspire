@@ -1,42 +1,83 @@
-import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, tap } from 'rxjs';
+import { catchError, of, tap, switchMap, map } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { marked } from 'marked';
 import { ArticlesService } from '../articles.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ProfileService } from '../../profile/profile.service';
 import { Article } from '../../../core/models/article.model';
 import { Comment } from '../../../core/models/comment.model';
+import { NotFound } from '../../not-found/not-found';
 
 @Component({
   selector: 'app-view-article',
-  imports: [DatePipe, RouterLink, ReactiveFormsModule],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, NotFound],
   templateUrl: './view-article.html',
   styleUrl: './view-article.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewArticle implements OnInit {
   private articlesService = inject(ArticlesService);
   private authService = inject(AuthService);
+  private profileService = inject(ProfileService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
 
-  // State
-  article = signal<Article | null>(null);
+  // Declarative article loading
+  private slug$ = this.route.paramMap.pipe(
+    map(params => params.get('slug'))
+  );
+
+  private articleResponse = toSignal(
+    this.slug$.pipe(
+      switchMap(slug => {
+        if (!slug) {
+          this.router.navigate(['/']);
+          return of({ article: null, error: null, loading: false, notFound: false });
+        }
+        return this.articlesService.getArticle(slug).pipe(
+          map(response => ({ article: response.article, error: null, loading: false, notFound: false })),
+          catchError((error: HttpErrorResponse) => {
+            const isNotFound = error.status === 404;
+            return of({
+              article: null,
+              error: isNotFound ? null : 'Failed to load article. Please try again.' as string | null,
+              loading: false,
+              notFound: isNotFound
+            });
+          })
+        );
+      })
+    ),
+    { initialValue: { article: null, error: null, loading: true, notFound: false } }
+  );
+
+  // Writable signal for article updates (favorite/unfavorite)
+  private articleSignal = signal<Article | null>(null);
+
+  // State derived from declarative loading
+  article = computed(() => this.articleSignal() ?? this.articleResponse().article);
+  isLoadingArticle = computed(() => this.articleResponse().loading);
+  articleError = computed(() => this.articleResponse().error);
+  isNotFound = computed(() => this.articleResponse().notFound);
+
   comments = signal<Comment[]>([]);
-  isLoadingArticle = signal(true);
   isLoadingComments = signal(true);
   isDeletingArticle = signal(false);
   isSubmittingComment = signal(false);
   isDeletingComment = signal<number | null>(null);
-  articleError = signal<string | null>(null);
   commentsError = signal<string | null>(null);
 
-  // Form control for new comment
-  commentControl = new FormControl('', {
-    nonNullable: true,
-    validators: [Validators.required, Validators.minLength(1)],
+  // Form group for new comment
+  commentForm = new FormGroup({
+    body: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(1)],
+    }),
   });
 
   // Current user
@@ -68,46 +109,21 @@ export class ViewArticle implements OnInit {
   });
 
   constructor() {
-    // Control the disabled state of commentControl through the FormControl API
+    // Control the disabled state of commentForm through the FormGroup API
     effect(() => {
       if (this.isSubmittingComment()) {
-        this.commentControl.disable();
+        this.commentForm.disable();
       } else {
-        this.commentControl.enable();
+        this.commentForm.enable();
       }
     });
   }
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
-    if (!slug) {
-      this.router.navigate(['/']);
-      return;
+    if (slug) {
+      this.loadComments(slug);
     }
-
-    this.loadArticle(slug);
-    this.loadComments(slug);
-  }
-
-  private loadArticle(slug: string): void {
-    this.isLoadingArticle.set(true);
-    this.articleError.set(null);
-
-    this.articlesService
-      .getArticle(slug)
-      .pipe(
-        tap((response) => {
-          this.article.set(response.article);
-          this.isLoadingArticle.set(false);
-        }),
-        catchError((error) => {
-          console.error('Error loading article:', error);
-          this.articleError.set('Failed to load article. It may not exist.');
-          this.isLoadingArticle.set(false);
-          return of(null);
-        })
-      )
-      .subscribe();
   }
 
   private loadComments(slug: string): void {
@@ -145,7 +161,7 @@ export class ViewArticle implements OnInit {
     operation
       .pipe(
         tap((response) => {
-          this.article.set(response.article);
+          this.articleSignal.set(response.article);
         }),
         catchError((error) => {
           console.error('Error toggling favorite:', error);
@@ -162,9 +178,28 @@ export class ViewArticle implements OnInit {
       return;
     }
 
-    // Note: ProfileService would handle this, but since we don't have it,
-    // we'll need to add it when profile service is available
-    console.log('Toggle follow for:', article.author.username);
+    const operation = article.author.following
+      ? this.profileService.unfollowUser(article.author.username)
+      : this.profileService.followUser(article.author.username);
+
+    operation
+      .pipe(
+        tap((response) => {
+          // Update the article's author following status
+          const currentArticle = this.article();
+          if (currentArticle) {
+            this.articleSignal.set({
+              ...currentArticle,
+              author: response.profile
+            });
+          }
+        }),
+        catchError((error) => {
+          console.error('Error toggling follow:', error);
+          return of(null);
+        })
+      )
+      .subscribe();
   }
 
   onEditArticle(): void {
@@ -204,11 +239,11 @@ export class ViewArticle implements OnInit {
 
   onSubmitComment(): void {
     const article = this.article();
-    if (!article || !this.isAuthenticated() || this.commentControl.invalid) {
+    if (!article || !this.isAuthenticated() || this.commentForm.invalid) {
       return;
     }
 
-    const commentBody = this.commentControl.value.trim();
+    const commentBody = this.commentForm.value.body?.trim();
     if (!commentBody) {
       return;
     }
@@ -222,7 +257,7 @@ export class ViewArticle implements OnInit {
           // Add the new comment to the top of the list
           this.comments.update((comments) => [response.comment, ...comments]);
           // Clear the form
-          this.commentControl.reset();
+          this.commentForm.reset();
           this.isSubmittingComment.set(false);
         }),
         catchError((error) => {

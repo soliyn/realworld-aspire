@@ -155,4 +155,86 @@ public class DeleteArticle : HandlerTestBase, IAsyncLifetime
         // Assert
         result.ShouldBeOfType<NotFound>();
     }
+
+    [Fact]
+    public async Task Should_Delete_Article_With_Comments()
+    {
+        // Arrange
+        var slug = "article-to-delete";
+
+        // Add comments to the article
+        using (var context = ScopedContext.Create(_connectionString))
+        {
+            var article = await context.DbContext.Articles
+                .FirstOrDefaultAsync(a => a.Slug == slug);
+            article.ShouldNotBeNull();
+
+            var commentAuthor = new AppUser
+            {
+                Email = "commenter@example.com",
+                UserName = "commenteruser",
+                Bio = "Comment author",
+                Image = "https://example.com/commenter.jpg",
+            };
+            await context.UserManager.CreateAsync(commentAuthor);
+            commentAuthor = (await context.UserManager.FindByEmailAsync(commentAuthor.Email))!;
+
+            var createdAt = new DateTime(2025, 10, 21, 10, 0, 0, DateTimeKind.Utc);
+            var comments = new List<Comment>
+            {
+                new()
+                {
+                    Body = "First comment on article",
+                    CreatedAt = createdAt,
+                    UpdatedAt = createdAt,
+                    Author = commentAuthor,
+                    Article = article,
+                },
+                new()
+                {
+                    Body = "Second comment on article",
+                    CreatedAt = createdAt.AddMinutes(5),
+                    UpdatedAt = createdAt.AddMinutes(5),
+                    Author = commentAuthor,
+                    Article = article,
+                },
+            };
+
+            await context.DbContext.Comments.AddRangeAsync(comments);
+            await context.DbContext.SaveChangesAsync();
+        }
+
+        // Verify comments exist before deletion
+        using (var context = ScopedContext.Create(_connectionString))
+        {
+            var commentsCount = await context.DbContext.Comments
+                .CountAsync(c => c.Article!.Slug == slug);
+            commentsCount.ShouldBe(2);
+        }
+
+        // Act
+        var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
+            await ArticleHandlers.DeleteArticle(
+                slug,
+                _authorPrincipal,
+                userManager,
+                dbContext)
+        );
+
+        // Assert
+        result.ShouldBeOfType<NoContent>();
+
+        // Verify article was deleted
+        using (var context = ScopedContext.Create(_connectionString))
+        {
+            var deletedArticle = await context.DbContext.Articles
+                .FirstOrDefaultAsync(a => a.Slug == slug);
+            deletedArticle.ShouldBeNull();
+
+            // Verify comments were cascade deleted
+            var commentsCount = await context.DbContext.Comments
+                .CountAsync(c => c.Article!.Slug == slug);
+            commentsCount.ShouldBe(0);
+        }
+    }
 }

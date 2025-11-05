@@ -7,6 +7,7 @@ import { Settings } from './features/settings/settings';
 import { EditArticle } from './features/articles/edit-article/edit-article';
 import { authGuard } from './core/services/auth-guard';
 import { ViewArticle } from './features/articles/view-article/view-article';
+import { NotFound } from './features/not-found/not-found';
 
 export const routes: Routes = [
   {
@@ -43,5 +44,9 @@ export const routes: Routes = [
   {
     path: 'article/:slug',
     component: ViewArticle,
+  },
+  {
+    path: '**',
+    component: NotFound,
   },
 ];

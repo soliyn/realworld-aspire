@@ -16,13 +16,17 @@ public static partial class ProfilesHandlers
     )
     {
         var currentUser = await userManager.GetUserAsync(principal);
-        if (currentUser == null)
-        {
-            return Results.Unauthorized();
-        }
+
         var user = await dbContext.Users
             .Where(u => u.UserName == username)
-            .Select(x => new { x.Id, x.UserName, x.Bio, x.Image, Following = x.Followers.Any(uf => uf.FollowerId == currentUser.Id) })
+            .Select(x => new
+            {
+                x.Id,
+                x.UserName,
+                x.Bio,
+                x.Image,
+                Following = currentUser != null && x.Followers.Any(uf => uf.FollowerId == currentUser.Id)
+            })
             .FirstOrDefaultAsync()
         ;
         if (user == null)

@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "run-script-os",
+    "start:win32": "ng serve --port %PORT%",
+    "start:default": "ng serve --port $PORT",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "jest",
@@ -47,10 +49,12 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^30.0.0",
     "@types/marked": "^5.0.2",
+    "cross-env": "^10.1.0",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "jest-preset-angular": "^15.0.3",
     "jsdom": "^27.0.1",
+    "run-script-os": "^1.1.6",
     "ts-jest": "^29.4.5",
     "typescript": "~5.9.2"
   }

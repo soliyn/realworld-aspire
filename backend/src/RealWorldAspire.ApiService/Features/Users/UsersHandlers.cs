@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
 using RealWorldAspire.ApiService.Data.Models;
 
 namespace RealWorldAspire.ApiService.Features.Users;
@@ -13,7 +11,7 @@ public static class UsersHandlers
         var user = new AppUser
         {
             UserName = request.User.Username,
-            Email = request.User.Email
+            Email = request.User.Email,
         };
         
         var result = await userManager.CreateAsync(user, request.User.Password);
