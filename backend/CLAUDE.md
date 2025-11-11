@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a .NET 9 implementation of the RealWorld API spec using .NET Aspire for cloud-native application development. The solution implements a conduit-style blogging platform with articles, user authentication, profiles, and social features.
+This is a .NET 10 implementation of the RealWorld API spec using .NET Aspire for cloud-native application development. The solution implements a conduit-style blogging platform with articles, user authentication, profiles, and social features.
 
 ## Project Structure
 
@@ -119,7 +119,7 @@ Each feature folder contains:
 ## Important Configuration Notes
 
 - **TreatWarningsAsErrors**: Enabled in `Directory.Build.props` - all warnings must be fixed
-- **SDK Version**: Uses .NET 9 with preview features enabled (`global.json`)
+- **SDK Version**: Uses .NET 10 with preview features enabled (`global.json`)
 - **Nullable**: Enabled across all projects - null reference types are enforced
 - **Swagger**: Available in development at `/swagger` with custom schema ID generation using full type names to avoid collisions
 - **Health Checks**: Configured at `/health` endpoint for the API service
