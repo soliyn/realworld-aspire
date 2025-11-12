@@ -12,7 +12,9 @@
       "Bash(tree:*)",
       "Bash(nul)",
       "Bash(powershell -Command \"Get-Content ''C:\\olen\\LabProjects\\realworld-aspire\\backend\\README.md'' -Raw | Select-String -Pattern ''backend/'' -Context 1,5\")",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "WebFetch(domain:www.nuget.org)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,6 @@
-# RealWorld API - .NET 9 with Aspire
+# RealWorld API - .NET 10 with Aspire
 
-A cloud-native implementation of the [RealWorld](https://realworld-docs.netlify.app/) blogging platform API spec, built with .NET 9 and .NET Aspire. This project demonstrates modern .NET development practices including minimal APIs, vertical slice architecture, and cloud-native patterns.
+A cloud-native implementation of the [RealWorld](https://realworld-docs.netlify.app/) blogging platform API spec, built with .NET 10 and .NET Aspire. This project demonstrates modern .NET development practices including minimal APIs, vertical slice architecture, and cloud-native patterns.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ A cloud-native implementation of the [RealWorld](https://realworld-docs.netlify.
 
 RealWorld is a Medium.com clone that demonstrates best practices for building production-ready fullstack applications. This backend implementation uses:
 
-- **.NET 9** for modern C# features and performance
+- **.NET 10** for modern C# features and performance
 - **.NET Aspire** for cloud-native orchestration and observability
 - **PostgreSQL** with Entity Framework Core for data persistence
 - **Minimal APIs** for lightweight, high-performance endpoints
@@ -62,9 +62,9 @@ RealWorld is a Medium.com clone that demonstrates best practices for building pr
 ## Technology Stack
 
 ### Core Framework
-- .NET 9.0 with C# 13
+- .NET 10.0 with C# 14
 - ASP.NET Core with Minimal APIs
-- Entity Framework Core 9.0.9
+- Entity Framework Core 10.0.0
 
 ### Database & Storage
 - PostgreSQL (containerized via Aspire)
@@ -98,7 +98,7 @@ RealWorld is a Medium.com clone that demonstrates best practices for building pr
 
 ### Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (for PostgreSQL container)
 - A code editor (Visual Studio 2022, VS Code, or Rider)
 
@@ -608,6 +608,6 @@ This project follows the [RealWorld API Spec](https://realworld-docs.netlify.app
 
 - [RealWorld Spec](https://realworld-docs.netlify.app/)
 - [.NET Aspire Documentation](https://learn.microsoft.com/dotnet/aspire/)
-- [.NET 9 Documentation](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-9)
+- [.NET 10 Documentation](https://learn.microsoft.com/dotnet/core/whats-new/dotnet-10)
 - [Entity Framework Core](https://learn.microsoft.com/ef/core/)
 - [Minimal APIs](https://learn.microsoft.com/aspnet/core/fundamentals/minimal-apis)
