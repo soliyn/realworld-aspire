@@ -16,7 +16,7 @@ var apiService = builder.AddProject<Projects.RealWorldAspire_ApiService>("apiser
     .WithHttpHealthCheck("/health")
     ;
 
-var angular = builder.AddNpmApp("angular", "../../../frontend/rw-ng-client")
+var angular = builder.AddViteApp("angular", "../../../frontend/rw-ng-client")
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithHttpEndpoint(env: "PORT")
