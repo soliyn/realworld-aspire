@@ -16,11 +16,12 @@ var apiService = builder.AddProject<Projects.RealWorldAspire_ApiService>("apiser
     .WithHttpHealthCheck("/health")
     ;
 
-var angular = builder.AddNpmApp("angular", "../../../frontend/rw-ng-client")
+var angular = builder.AddJavaScriptApp("angular", "../../../frontend/rw-ng-client")
     .WithReference(apiService)
     .WaitFor(apiService)
     .WithHttpEndpoint(env: "PORT")
     .WithExternalHttpEndpoints()
+    .WithRunScript("start")
     .PublishAsDockerFile();
 
 apiService.WithReference(angular);
