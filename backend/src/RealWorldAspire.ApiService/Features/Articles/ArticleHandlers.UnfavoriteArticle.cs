@@ -16,7 +16,7 @@ public static partial class ArticleHandlers
         CancellationToken cancellationToken = default
     )
     {
-        var user = await userManager.GetUserAsync(principal, cancellationToken);
+        var user = await userManager.GetUserAsync(principal);
         if (user == null)
         {
             return TypedResults.Unauthorized();

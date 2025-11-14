@@ -15,7 +15,7 @@ public static partial class ArticleHandlers
         RealWorldDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var user = await userManager.GetUserAsync(principal, cancellationToken);
+        var user = await userManager.GetUserAsync(principal);
 
         var article = await dbContext.Articles
             .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);

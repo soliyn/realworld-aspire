@@ -20,7 +20,7 @@ public static partial class ArticleHandlers
         int offset = request.Offset ?? 0;
         int limit = request.Limit ?? defaultLimit;
 
-        var user = await userManager.GetUserAsync(principal, cancellationToken);
+        var user = await userManager.GetUserAsync(principal);
 
         IQueryable<Article> query = dbContext.Articles;
 
