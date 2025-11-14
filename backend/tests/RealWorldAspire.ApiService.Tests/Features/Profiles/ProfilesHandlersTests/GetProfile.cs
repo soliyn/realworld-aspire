@@ -35,7 +35,7 @@ public class GetProfile : HandlerTestBase
 
         // Act
         await using var dbContext = new RealWorldDbContext(_optionsBuilder.Options);
-        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContext);
+        var result = await ProfilesHandlers.GetProfile("nonexistentuser", principal, userManagerMock.Object, dbContext, default);
 
         // Assert
         result.ShouldBeOfType<Microsoft.AspNetCore.Http.HttpResults.NotFound<string>>()
@@ -71,7 +71,7 @@ public class GetProfile : HandlerTestBase
         IResult result;
         await using (var dbContext = new RealWorldDbContext(_optionsBuilder.Options))
         {
-            result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContext);
+            result = await ProfilesHandlers.GetProfile("jake", principal, userManagerMock.Object, dbContext, default);
         }
 
         // Assert

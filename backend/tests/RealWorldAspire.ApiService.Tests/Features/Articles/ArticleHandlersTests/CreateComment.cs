@@ -99,7 +99,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _commenterPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -174,7 +175,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _commenterPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -209,7 +211,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _commenterPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert - User doesn't follow themselves, so Following should be false
@@ -242,7 +245,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal, // Author commenting on own article
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -301,7 +305,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _commenterPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Act - Create second comment
@@ -312,7 +317,8 @@ public class CreateComment : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert

@@ -14,12 +14,13 @@ public static partial class ArticleHandlers
         int id,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default)
     {
-        var user = await userManager.GetUserOrThrow(principal);
+        var user = await userManager.GetUserOrThrow(principal, cancellationToken);
 
         var article = await dbContext.Articles
-            .FirstOrDefaultAsync(x => x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
 
         if (article == null)
         {
@@ -29,7 +30,7 @@ public static partial class ArticleHandlers
         var comment = await dbContext.Comments
             .Include(c => c.Author)
             .Include(c => c.Article)
-            .FirstOrDefaultAsync(c => c.Id == id && c.Article!.Slug == slug);
+            .FirstOrDefaultAsync(c => c.Id == id && c.Article!.Slug == slug, cancellationToken);
 
         return comment switch
         {
@@ -41,7 +42,7 @@ public static partial class ArticleHandlers
         async Task<IResult> Delete()
         {
             dbContext.Comments.Remove(comment);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
 
             return TypedResults.NoContent();
         }

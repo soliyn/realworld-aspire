@@ -142,7 +142,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _commenterPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -178,7 +179,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _otherUserPrincipal, // Different user trying to delete
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -212,7 +214,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _commenterPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -239,7 +242,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 nonExistentCommentId,
                 _commenterPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -307,7 +311,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _commenterPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -334,7 +339,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _authorPrincipal, // Article author, but not comment author
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -361,7 +367,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _commenterPrincipal, // Comment author
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -388,7 +395,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentId,
                 _authorPrincipal, // Both article and comment author
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -416,7 +424,8 @@ public class DeleteComment : HandlerTestBase, IAsyncLifetime
                 commentToDeleteId,
                 _authorPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert

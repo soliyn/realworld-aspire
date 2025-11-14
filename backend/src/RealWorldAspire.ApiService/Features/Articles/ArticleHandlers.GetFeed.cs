@@ -13,13 +13,14 @@ public static partial class ArticleHandlers
         [AsParameters] GetFeedRequest request,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default)
     {
         const int defaultLimit = 20;
         int offset = request.Offset ?? 0;
         int limit = request.Limit ?? defaultLimit;
 
-        var user = await userManager.GetUserOrThrow(principal);
+        var user = await userManager.GetUserOrThrow(principal, cancellationToken);
 
         var articles = await dbContext.Articles
             .Include(x => x.Author)
@@ -45,7 +46,7 @@ public static partial class ArticleHandlers
                     Following = true, // Always true since we're getting articles from followed users
                 }
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return TypedResults.Ok(new GetArticlesResponse { Articles = articles, ArticlesCount = articles.Count });
     }

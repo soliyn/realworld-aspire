@@ -88,7 +88,8 @@ public class DeleteArticle : HandlerTestBase, IAsyncLifetime
                 slug,
                 _authorPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -114,7 +115,8 @@ public class DeleteArticle : HandlerTestBase, IAsyncLifetime
                 slug,
                 _otherUserPrincipal, // Using different user's principal
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -149,7 +151,8 @@ public class DeleteArticle : HandlerTestBase, IAsyncLifetime
                 nonExistentSlug,
                 _authorPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -218,7 +221,8 @@ public class DeleteArticle : HandlerTestBase, IAsyncLifetime
                 slug,
                 _authorPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert

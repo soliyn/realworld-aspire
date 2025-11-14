@@ -12,7 +12,8 @@ public static partial class ProfilesHandlers
         string username,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default
     )
     {
         var currentUser = await userManager.GetUserAsync(principal);
@@ -27,7 +28,7 @@ public static partial class ProfilesHandlers
                 x.Image,
                 Following = currentUser != null && x.Followers.Any(uf => uf.FollowerId == currentUser.Id)
             })
-            .FirstOrDefaultAsync()
+            .FirstOrDefaultAsync(cancellationToken)
         ;
         if (user == null)
         {

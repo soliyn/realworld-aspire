@@ -61,7 +61,7 @@ public class CreateArticle : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.CreateArticle(request, _principal, userManager, dbContext, fakeTimeProvider)
+            await ArticleHandlers.CreateArticle(request, _principal, userManager, dbContext, fakeTimeProvider, default)
         );
 
         // Assert

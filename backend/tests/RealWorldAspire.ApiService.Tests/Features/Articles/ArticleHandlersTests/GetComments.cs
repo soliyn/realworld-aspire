@@ -145,7 +145,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -209,7 +210,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-without-comments",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -227,7 +229,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "non-existent-article",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -265,7 +268,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 followerPrincipal,
                 context.UserManager,
-                context.DbContext);
+                context.DbContext,
+                default);
 
             // Assert
             var okResult = result.ShouldBeOfType<Ok<GetCommentsResponse>>();
@@ -294,7 +298,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -314,7 +319,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 _commenter1Principal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert
@@ -372,7 +378,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert - Should only return 3 comments from the first article
@@ -391,7 +398,8 @@ public class GetComments : HandlerTestBase, IAsyncLifetime
                 "article-with-comments",
                 _anonymousPrincipal,
                 userManager,
-                dbContext)
+                dbContext,
+                default)
         );
 
         // Assert

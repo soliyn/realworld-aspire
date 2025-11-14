@@ -6,21 +6,21 @@ namespace RealWorldAspire.ApiService.Features.Users;
 
 public static class UsersHandlers
 {
-    public static async Task<IResult> Create(CreateUserRequest request, UserManager<AppUser> userManager, JwtTokenService tokenService)
+    public static async Task<IResult> Create(CreateUserRequest request, UserManager<AppUser> userManager, JwtTokenService tokenService, CancellationToken cancellationToken = default)
     {
         var user = new AppUser
         {
             UserName = request.User.Username,
             Email = request.User.Email,
         };
-        
+
         var result = await userManager.CreateAsync(user, request.User.Password);
 
         if (!result.Succeeded)
         {
             return TypedResults.BadRequest(result.Errors);
         }
-        
+
         var registeredUser = await userManager.FindByEmailAsync(request.User.Email);
         Debug.Assert(registeredUser != null);
         var token = tokenService.GenerateToken(registeredUser, []);
@@ -35,10 +35,10 @@ public static class UsersHandlers
         });
     }
 
-    public static async Task<IResult> Login(LoginUserRequest request, UserManager<AppUser> userManager, JwtTokenService tokenService)
+    public static async Task<IResult> Login(LoginUserRequest request, UserManager<AppUser> userManager, JwtTokenService tokenService, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByEmailAsync(request.User.Email);
-        
+
         if (user != null && await userManager.CheckPasswordAsync(user, request.User.Password))
         {
             var roles = await userManager.GetRolesAsync(user);

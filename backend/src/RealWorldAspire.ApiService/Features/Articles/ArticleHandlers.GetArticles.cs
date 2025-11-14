@@ -13,27 +13,28 @@ public static partial class ArticleHandlers
         [AsParameters] GetArticlesRequest request,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default)
     {
         const int defaultLimit = 20;
         int offset = request.Offset ?? 0;
         int limit = request.Limit ?? defaultLimit;
 
-        var user = await userManager.GetUserAsync(principal);
+        var user = await userManager.GetUserAsync(principal, cancellationToken);
 
         IQueryable<Article> query = dbContext.Articles;
 
-        query = query.WhereIf(request.Tag is not null, 
+        query = query.WhereIf(request.Tag is not null,
             x => x.Tags.Any(t => t.Name == request.Tag)
         );
-        query = query.WhereIf(request.Author is not null, 
+        query = query.WhereIf(request.Author is not null,
             x => x.Author.UserName == request.Author
         );
-        query = query.WhereIf(request.Favorited is not null, 
+        query = query.WhereIf(request.Favorited is not null,
             x => x.FavoritedByUsers.Any(u => u.UserName == request.Favorited)
         );
 
-        var totalCount = await query.CountAsync();
+        var totalCount = await query.CountAsync(cancellationToken);
 
         var articles = await query
             .OrderByDescending(x => x.CreatedAt)
@@ -57,7 +58,7 @@ public static partial class ArticleHandlers
                     Following = user != null && x.Author.Followers.Any(u => u.FollowerId == user.Id),
                 },
             })
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return TypedResults.Ok(new GetArticlesResponse { Articles = articles, ArticlesCount = totalCount });
     }

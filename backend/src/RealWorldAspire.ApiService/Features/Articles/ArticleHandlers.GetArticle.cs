@@ -12,9 +12,10 @@ public static partial class ArticleHandlers
         string slug,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext)
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default)
     {
-        var user = await userManager.GetUserAsync(principal);
+        var user = await userManager.GetUserAsync(principal, cancellationToken);
 
         var articleModel = await dbContext.Articles
             .Include(x => x.Author)
@@ -37,7 +38,7 @@ public static partial class ArticleHandlers
                     Following = user != null && x.Author.Followers.Any(uf => uf.FollowerId == user.Id),
                 },
             })
-            .FirstOrDefaultAsync(x => x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
 
         if (articleModel == null)
         {
