@@ -17,7 +17,7 @@ public static partial class ArticleHandlers
         TimeProvider timeProvider,
         CancellationToken cancellationToken = default)
     {
-        var user = await userManager.GetUserOrThrow(principal, cancellationToken);
+        var user = await userManager.GetUserOrThrow(principal);
 
         var tags = await GetOrCreateTags(request.Article.TagList, dbContext, cancellationToken);
 

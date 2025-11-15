@@ -6,6 +6,6 @@ namespace RealWorldAspire.ApiService.Extensions;
 
 public static class UserManagerExtensions
 {
-    public static async Task<AppUser> GetUserOrThrow(this UserManager<AppUser> userManager, ClaimsPrincipal principal, CancellationToken cancellationToken = default) =>
+    public static async Task<AppUser> GetUserOrThrow(this UserManager<AppUser> userManager, ClaimsPrincipal principal) =>
         await userManager.GetUserAsync(principal) ?? throw new UnauthorizedAccessException();
 }
