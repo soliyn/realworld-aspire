@@ -12,7 +12,8 @@ public static partial class ProfilesHandlers
         string username,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default
     )
     {
         var follower = await userManager.GetUserAsync(principal);
@@ -28,7 +29,7 @@ public static partial class ProfilesHandlers
         }
 
         var userFollow = await dbContext.UserFollows
-            .FirstOrDefaultAsync(x => x.FollowerId == follower.Id && x.FollowingId == following.Id);
+            .FirstOrDefaultAsync(x => x.FollowerId == follower.Id && x.FollowingId == following.Id, cancellationToken);
         if (userFollow != null)
         {
             return TypedResults.Ok();
@@ -39,8 +40,8 @@ public static partial class ProfilesHandlers
             FollowerId = follower.Id,
             FollowingId = following.Id,
         };
-        await dbContext.UserFollows.AddAsync(userFollow);
-        await dbContext.SaveChangesAsync();
+        await dbContext.UserFollows.AddAsync(userFollow, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
         return TypedResults.Ok(new ProfileResponse()
         {
             Profile = new ProfileResponse.ProfileModel()

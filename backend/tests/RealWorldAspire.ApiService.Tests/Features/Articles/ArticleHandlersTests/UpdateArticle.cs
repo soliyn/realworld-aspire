@@ -103,7 +103,8 @@ public class UpdateArticle : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -182,7 +183,8 @@ public class UpdateArticle : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -213,7 +215,8 @@ public class UpdateArticle : HandlerTestBase, IAsyncLifetime
                 _otherUserPrincipal, // Using different user's principal
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -260,7 +263,8 @@ public class UpdateArticle : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert
@@ -302,7 +306,8 @@ public class UpdateArticle : HandlerTestBase, IAsyncLifetime
                 _authorPrincipal,
                 userManager,
                 dbContext,
-                fakeTimeProvider)
+                fakeTimeProvider,
+                default)
         );
 
         // Assert

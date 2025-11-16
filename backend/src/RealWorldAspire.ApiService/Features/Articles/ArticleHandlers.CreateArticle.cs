@@ -14,11 +14,12 @@ public static partial class ArticleHandlers
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         RealWorldDbContext dbContext,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken = default)
     {
         var user = await userManager.GetUserOrThrow(principal);
 
-        var tags = await GetOrCreateTags(request.Article.TagList, dbContext);
+        var tags = await GetOrCreateTags(request.Article.TagList, dbContext, cancellationToken);
 
         var now = timeProvider.GetUtcNow().UtcDateTime;
         var article = new Article
@@ -33,11 +34,11 @@ public static partial class ArticleHandlers
             Author = user,
         };
 
-        await dbContext.Articles.AddAsync(article);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Articles.AddAsync(article, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return TypedResults.Ok(
-            new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, new SlugHelper().GenerateSlug(request.Article.Title)) }
+            new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, new SlugHelper().GenerateSlug(request.Article.Title), cancellationToken) }
         );
     }
 }

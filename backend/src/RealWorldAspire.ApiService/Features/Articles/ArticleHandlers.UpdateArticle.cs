@@ -15,14 +15,15 @@ public static partial class ArticleHandlers
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         RealWorldDbContext dbContext,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken = default)
     {
         var user = await userManager.GetUserOrThrow(principal);
 
         var article = await dbContext.Articles
             .Include(a => a.Author)
             .Include(a => a.Tags)
-            .FirstOrDefaultAsync(x => x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
 
         return article switch
         {
@@ -36,7 +37,7 @@ public static partial class ArticleHandlers
             await UpdateAndSaveArticle();
 
             return TypedResults.Ok(
-                new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, slug) }
+                new GetArticleResponse { Article = await CreateArticleResponse(dbContext, user, slug, cancellationToken) }
             );
         }
 
@@ -45,10 +46,10 @@ public static partial class ArticleHandlers
             article.Title = request.Article.Title;
             article.Description = request.Article.Description;
             article.Body = request.Article.Body;
-            article.Tags = await GetOrCreateTags(request.Article.TagList, dbContext);
+            article.Tags = await GetOrCreateTags(request.Article.TagList, dbContext, cancellationToken);
             article.UpdatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }

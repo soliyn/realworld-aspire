@@ -8,7 +8,7 @@ namespace RealWorldAspire.ApiService.Features.User;
 
 public static class UserHandlers
 {
-    public static async Task<IResult> Get(ClaimsPrincipal principal, UserManager<AppUser> userManager, JwtTokenService tokenService)
+    public static async Task<IResult> Get(ClaimsPrincipal principal, UserManager<AppUser> userManager, JwtTokenService tokenService, CancellationToken cancellationToken = default)
     {
         var user = await userManager.GetUserAsync(principal);
         if (user == null)
@@ -32,7 +32,8 @@ public static class UserHandlers
         UpdateUserRequest request,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        JwtTokenService tokenService
+        JwtTokenService tokenService,
+        CancellationToken cancellationToken = default
     )
     {
         var user = await userManager.GetUserAsync(principal);

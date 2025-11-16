@@ -12,7 +12,8 @@ public static partial class ArticleHandlers
         string slug,
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
-        RealWorldDbContext dbContext
+        RealWorldDbContext dbContext,
+        CancellationToken cancellationToken = default
     )
     {
         var user = await userManager.GetUserAsync(principal);
@@ -37,7 +38,7 @@ public static partial class ArticleHandlers
                 IsFavorited = x.FavoritedByUsers.Any(u => u.Id == user.Id),
                 Author = x.Author
             })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (article == null)
         {
@@ -52,7 +53,7 @@ public static partial class ArticleHandlers
                 ArticleId = article.ArticleId,
             };
             dbContext.FavoriteArticles.Remove(fa);
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         return TypedResults.Ok(new GetArticleResponse

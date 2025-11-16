@@ -15,13 +15,14 @@ public static partial class ArticleHandlers
         ClaimsPrincipal principal,
         UserManager<AppUser> userManager,
         RealWorldDbContext dbContext,
-        TimeProvider timeProvider
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken = default
     )
     {
         var user = await userManager.GetUserOrThrow(principal);
 
         var article = await dbContext.Articles
-            .FirstOrDefaultAsync(x => x.Slug == slug);
+            .FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
 
         if (article is null)
         {
@@ -38,8 +39,8 @@ public static partial class ArticleHandlers
             Article = article,
         };
 
-        await dbContext.Comments.AddAsync(comment);
-        await dbContext.SaveChangesAsync();
+        await dbContext.Comments.AddAsync(comment, cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         var response = await dbContext.Comments
             .Where(c => c.Id == comment.Id)
@@ -57,7 +58,7 @@ public static partial class ArticleHandlers
                     Following = c.Author.Followers.Any(uf => uf.FollowerId == user.Id),
                 },
             })
-            .FirstAsync();
+            .FirstAsync(cancellationToken);
 
         return TypedResults.Ok(new GetCommentResponse { Comment = response });
     }

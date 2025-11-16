@@ -9,7 +9,8 @@ public static partial class ArticleHandlers
     private static async Task<GetArticleResponse.ArticleModel> CreateArticleResponse(
         RealWorldDbContext dbContext,
         AppUser user,
-        string slug
+        string slug,
+        CancellationToken cancellationToken = default
     ) =>
         await dbContext.Articles
             .Where(x => x.Slug == slug)
@@ -32,13 +33,13 @@ public static partial class ArticleHandlers
                     Following = x.Author.Followers.Any(uf => uf.FollowerId == user.Id),
                 },
             })
-            .FirstAsync();
+            .FirstAsync(cancellationToken);
 
-    private static async Task<List<Tag>> GetOrCreateTags(List<string> tagNames, RealWorldDbContext dbContext)
+    private static async Task<List<Tag>> GetOrCreateTags(List<string> tagNames, RealWorldDbContext dbContext, CancellationToken cancellationToken = default)
     {
         var existingTags = await dbContext.Tags
             .Where(t => tagNames.Contains(t.Name))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var tags = new List<Tag>();
         foreach (var tagName in tagNames)

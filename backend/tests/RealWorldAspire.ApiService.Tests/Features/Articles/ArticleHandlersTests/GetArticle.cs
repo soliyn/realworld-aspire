@@ -44,7 +44,7 @@ public class GetArticle : HandlerTestBase, IAsyncLifetime
     {
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", _principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -77,7 +77,7 @@ public class GetArticle : HandlerTestBase, IAsyncLifetime
     public async Task Should_Return_404NotFound()
     {
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticle("non-existent-slug", _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticle("non-existent-slug", _principal, userManager, dbContext, default)
         );
         result.ShouldBeOfType<NotFound>();
     }
@@ -111,7 +111,7 @@ public class GetArticle : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", principal, userManager, dbContext)
+            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -174,7 +174,7 @@ public class GetArticle : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", principal, userManager, dbContext)
+            await ArticleHandlers.GetArticle("how-to-learn-javascript-efficiently", principal, userManager, dbContext, default)
         );
 
         // Assert

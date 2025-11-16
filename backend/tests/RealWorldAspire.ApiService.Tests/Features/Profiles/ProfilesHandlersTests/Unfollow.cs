@@ -35,8 +35,8 @@ public class Unfollow : HandlerTestBase
             .ReturnsAsync((AppUser?)null);
 
         // Act
-        var result = await ScopedContext.Execute(_connectionString, async dbContext => 
-            await ProfilesHandlers.Unfollow("someuser", principal, userManagerMock.Object, dbContext)
+        var result = await ScopedContext.Execute(_connectionString, async dbContext =>
+            await ProfilesHandlers.Unfollow("someuser", principal, userManagerMock.Object, dbContext, default)
         );
 
         // Assert
@@ -76,8 +76,8 @@ public class Unfollow : HandlerTestBase
             .ReturnsAsync((AppUser?)null);
 
         // Act
-        var result = await ScopedContext.Execute(_connectionString, async dbContext => 
-            await ProfilesHandlers.Unfollow("nonexistentuser", principal, userManagerMock.Object, dbContext)
+        var result = await ScopedContext.Execute(_connectionString, async dbContext =>
+            await ProfilesHandlers.Unfollow("nonexistentuser", principal, userManagerMock.Object, dbContext, default)
         );        
 
         // Assert
@@ -123,8 +123,8 @@ public class Unfollow : HandlerTestBase
             .ReturnsAsync(followingUser);
 
         // Act
-        var result = await ScopedContext.Execute(_connectionString, async dbContext => 
-            await ProfilesHandlers.Unfollow("bob", principal, userManagerMock.Object, dbContext)
+        var result = await ScopedContext.Execute(_connectionString, async dbContext =>
+            await ProfilesHandlers.Unfollow("bob", principal, userManagerMock.Object, dbContext, default)
         );        
 
         // Assert
@@ -170,8 +170,8 @@ public class Unfollow : HandlerTestBase
         }
 
         // Act
-        var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) => 
-            await ProfilesHandlers.Unfollow("dave", principal, userManager, dbContext)
+        var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
+            await ProfilesHandlers.Unfollow("dave", principal, userManager, dbContext, default)
         );        
 
         // Assert

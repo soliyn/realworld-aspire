@@ -95,7 +95,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -150,7 +150,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -201,7 +201,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -248,7 +248,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -296,7 +296,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -335,7 +335,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -394,7 +394,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -446,7 +446,7 @@ public class GetFeed : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext)
+            await ArticleHandlers.GetFeed(request, principal, userManager, dbContext, default)
         );
 
         // Assert

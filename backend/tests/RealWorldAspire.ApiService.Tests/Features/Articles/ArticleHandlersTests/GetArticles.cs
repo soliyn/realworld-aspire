@@ -75,7 +75,7 @@ public class GetArticles : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -100,7 +100,7 @@ public class GetArticles : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -131,7 +131,7 @@ public class GetArticles : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext, default)
         );
 
         // Assert
@@ -162,7 +162,7 @@ public class GetArticles : HandlerTestBase, IAsyncLifetime
 
         // Act
         var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
-            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext)
+            await ArticleHandlers.GetArticles(request, _principal, userManager, dbContext, default)
         );
 
         // Assert
