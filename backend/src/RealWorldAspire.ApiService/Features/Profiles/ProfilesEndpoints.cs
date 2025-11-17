@@ -6,10 +6,10 @@ public static class ProfilesEndpoints
     {
         var profilesEndPoints = endpoints.MapGroup("/profiles");
 
-        profilesEndPoints.MapGet("{username}", ProfilesHandlers.GetProfile);
-        profilesEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow).RequireAuthorization();
-        profilesEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow).RequireAuthorization();
-        
+        profilesEndPoints.MapGet("{username}", ProfilesHandlers.GetProfile).AllowAnonymous();
+        profilesEndPoints.MapPost("{username}/follow", ProfilesHandlers.Follow);
+        profilesEndPoints.MapDelete("{username}/follow", ProfilesHandlers.Unfollow);
+
         return endpoints;
     }
 }

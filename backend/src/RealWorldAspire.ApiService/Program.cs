@@ -135,7 +135,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-var appApi = app.MapGroup("/api");
+var appApi = app.MapGroup("/api").RequireAuthorization();
 appApi
     .MapArticleEndpoints()
     .MapUserEndpoints()

@@ -6,19 +6,19 @@ public static class ArticleEndpoints
     {
         var articlesEndPoints = endpoints.MapGroup("/articles");
 
-        articlesEndPoints.MapGet("/feed", ArticleHandlers.GetFeed).RequireAuthorization();
-        articlesEndPoints.MapGet("/{slug}", ArticleHandlers.GetArticle);
-        articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle).RequireAuthorization();
-        articlesEndPoints.MapGet("", ArticleHandlers.GetArticles);
-        articlesEndPoints.MapPost("", ArticleHandlers.CreateArticle).RequireAuthorization();
-        articlesEndPoints.MapPut("/{slug}", ArticleHandlers.UpdateArticle).RequireAuthorization();
+        articlesEndPoints.MapGet("/feed", ArticleHandlers.GetFeed);
+        articlesEndPoints.MapGet("/{slug}", ArticleHandlers.GetArticle).AllowAnonymous();
+        articlesEndPoints.MapDelete("/{slug}", ArticleHandlers.DeleteArticle);
+        articlesEndPoints.MapGet("", ArticleHandlers.GetArticles).AllowAnonymous();
+        articlesEndPoints.MapPost("", ArticleHandlers.CreateArticle);
+        articlesEndPoints.MapPut("/{slug}", ArticleHandlers.UpdateArticle);
 
-        articlesEndPoints.MapPost("{slug}/favorite", ArticleHandlers.FavoriteArticle).RequireAuthorization();
-        articlesEndPoints.MapDelete("{slug}/favorite", ArticleHandlers.UnfavoriteArticle).RequireAuthorization();
+        articlesEndPoints.MapPost("{slug}/favorite", ArticleHandlers.FavoriteArticle);
+        articlesEndPoints.MapDelete("{slug}/favorite", ArticleHandlers.UnfavoriteArticle);
 
-        articlesEndPoints.MapPost("{slug}/comments", ArticleHandlers.CreateComment).RequireAuthorization();
-        articlesEndPoints.MapGet("{slug}/comments", ArticleHandlers.GetComments);
-        articlesEndPoints.MapDelete("{slug}/comments/{id}", ArticleHandlers.DeleteComment).RequireAuthorization();
+        articlesEndPoints.MapPost("{slug}/comments", ArticleHandlers.CreateComment);
+        articlesEndPoints.MapGet("{slug}/comments", ArticleHandlers.GetComments).AllowAnonymous();
+        articlesEndPoints.MapDelete("{slug}/comments/{id}", ArticleHandlers.DeleteComment);
 
         return endpoints;
     }

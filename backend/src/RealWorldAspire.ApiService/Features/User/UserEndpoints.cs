@@ -6,11 +6,9 @@ public static class UserEndpoints
     {
         var userEndPoints = endpoints.MapGroup("/user");
 
-        userEndPoints.MapGet("", UserHandlers.Get)
-            .RequireAuthorization();
-        userEndPoints.MapPut("", UserHandlers.Update)
-            .RequireAuthorization();
-        
+        userEndPoints.MapGet("", UserHandlers.Get);
+        userEndPoints.MapPut("", UserHandlers.Update);
+
         return endpoints;
     }
 }
