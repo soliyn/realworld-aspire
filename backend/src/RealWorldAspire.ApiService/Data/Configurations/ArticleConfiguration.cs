@@ -10,6 +10,9 @@ public class ArticleConfiguration : IEntityTypeConfiguration<Article>
     {
         builder.HasKey(x => x.ArticleId);
 
+        builder.HasIndex(e => e.Slug)
+            .IsUnique();
+
         builder.Property(e => e.CreatedAt)
             .HasConversion(
                 v => v.ToUniversalTime(),
