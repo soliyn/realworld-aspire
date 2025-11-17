@@ -5,9 +5,7 @@ public static class ProfilesEndpoints
     public static IEndpointRouteBuilder MapProfilesEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var profilesEndPoints = endpoints.MapGroup("/profiles")
-            .WithTags("Profiles")
-            .WithOpenApi()
-        ;
+            .WithTags("Profiles");
 
         profilesEndPoints
             .MapGet("{username}", ProfilesHandlers.GetProfile)

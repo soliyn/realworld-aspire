@@ -5,9 +5,7 @@ public static class UserEndpoints
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var userEndPoints = endpoints.MapGroup("/user")
-            .WithTags("User")
-            .WithOpenApi()
-        ;
+            .WithTags("User");
 
         userEndPoints
             .MapGet("", UserHandlers.Get)

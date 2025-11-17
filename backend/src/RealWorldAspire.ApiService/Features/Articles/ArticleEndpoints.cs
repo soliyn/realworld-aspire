@@ -5,9 +5,7 @@ public static class ArticleEndpoints
     public static IEndpointRouteBuilder MapArticleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var articlesEndPoints = endpoints.MapGroup("/articles")
-            .WithTags("Articles")
-            .WithOpenApi()
-        ;
+            .WithTags("Articles");
 
         articlesEndPoints
             .MapGet("/feed", ArticleHandlers.GetFeed)
