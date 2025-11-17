@@ -8,8 +8,8 @@ public static class TagsEndpoints
     {
         var tagsEndPoints = endpoints.MapGroup("/tags");
 
-        tagsEndPoints.MapGet("", TagsHandlers.GetTags);
-        
+        tagsEndPoints.MapGet("", TagsHandlers.GetTags).AllowAnonymous();
+
         return endpoints;
     }
 }

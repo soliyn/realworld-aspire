@@ -6,9 +6,9 @@ public static class UsersEndpoints
     {
         var usersEndPoints = endpoints.MapGroup("/users");
 
-        usersEndPoints.MapPost("", UsersHandlers.Create);
-        usersEndPoints.MapPost("/login", UsersHandlers.Login);
-        
+        usersEndPoints.MapPost("", UsersHandlers.Create).AllowAnonymous();
+        usersEndPoints.MapPost("/login", UsersHandlers.Login).AllowAnonymous();
+
         return endpoints;
     }
 }
