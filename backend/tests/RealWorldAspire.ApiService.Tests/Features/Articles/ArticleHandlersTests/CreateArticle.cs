@@ -100,4 +100,54 @@ public class CreateArticle : HandlerTestBase, IAsyncLifetime
         savedArticle.Tags.Select(t => t.Name).OrderBy(n => n).ShouldBe(new[] { "dragons", "fantasy", "training" });
         savedArticle.Author.UserName.ShouldBe("testauthor");
     }
+
+    [Fact]
+    public async Task Should_Return_409_Conflict()
+    {
+        // Arrange
+        var fixedTime = new DateTime(2025, 10, 28, 12, 30, 45, DateTimeKind.Utc);
+        var fakeTimeProvider = new FakeTimeProvider(fixedTime);
+
+        // Create an existing article with the slug "duplicate-article"
+        using (var context = ScopedContext.Create(_connectionString))
+        {
+            var author = await context.UserManager.FindByEmailAsync(_author.Email);
+
+            var existingArticle = new Article
+            {
+                Title = "Duplicate Article",
+                Slug = "duplicate-article",
+                Description = "This article already exists",
+                Body = "Content of the existing article",
+                Author = author!,
+                Tags = [],
+                CreatedAt = fixedTime,
+                UpdatedAt = fixedTime,
+            };
+
+            context.DbContext.Articles.Add(existingArticle);
+            await context.DbContext.SaveChangesAsync();
+        }
+
+        var request = new CreateArticleRequest
+        {
+            Article = new CreateArticleRequest.ArticleModel
+            {
+                Title = "Duplicate Article",
+                Description = "Attempting to create duplicate",
+                Body = "This should fail due to duplicate slug",
+                TagList = [],
+            },
+        };
+
+        // Act
+        var result = await ScopedContext.Execute(_connectionString, async (dbContext, userManager) =>
+            await ArticleHandlers.CreateArticle(request, _principal, userManager, dbContext, fakeTimeProvider)
+        );
+
+        // Assert
+        result.ShouldBeOfType<Conflict<string>>();
+        var conflictResult = (Conflict<string>)result;
+        conflictResult.Value.ShouldBe("An article with this title already exists");
+    }
 }
