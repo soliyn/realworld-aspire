@@ -1,7 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
@@ -22,6 +21,8 @@ builder.Services.AddProblemDetails();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+builder.Services.AddValidation();
 
 builder.AddNpgsqlDbContext<RealWorldDbContext>("realworlddb");
 
@@ -133,15 +134,15 @@ appApi
     .MapTagsEndpoints()
     ;
 
-if (app.Environment.IsDevelopment())
-{
-    // Ensure database is created and seeded
-    using var scope = app.Services.CreateScope();
-    await using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
-    context.Database.Migrate();
-    using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-    await context.Seed(userManager);
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     // Ensure database is created and seeded
+//     using var scope = app.Services.CreateScope();
+//     await using var context = scope.ServiceProvider.GetRequiredService<RealWorldDbContext>();
+//     context.Database.Migrate();
+//     using var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+//     await context.Seed(userManager);
+// }
 
 app.MapDefaultEndpoints();
 
