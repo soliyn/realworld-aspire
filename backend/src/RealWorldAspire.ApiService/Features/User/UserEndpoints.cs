@@ -11,14 +11,12 @@ public static class UserEndpoints
             .MapGet("", UserHandlers.Get)
             .WithName("GetCurrentUser")
             .WithSummary("Get current authenticated user")
-            .RequireAuthorization()
         ;
 
         userEndPoints
             .MapPut("", UserHandlers.Update)
             .WithName("UpdateCurrentUser")
             .WithSummary("Update current authenticated user")
-            .RequireAuthorization()
         ;
 
         return endpoints;

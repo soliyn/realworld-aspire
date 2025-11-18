@@ -18,14 +18,12 @@ public static class ProfilesEndpoints
             .MapPost("{username}/follow", ProfilesHandlers.Follow)
             .WithName("FollowUser")
             .WithSummary("Follow a user")
-            .RequireAuthorization()
         ;
 
         profilesEndPoints
             .MapDelete("{username}/follow", ProfilesHandlers.Unfollow)
             .WithName("UnfollowUser")
             .WithSummary("Unfollow a user")
-            .RequireAuthorization()
         ;
 
         return endpoints;
