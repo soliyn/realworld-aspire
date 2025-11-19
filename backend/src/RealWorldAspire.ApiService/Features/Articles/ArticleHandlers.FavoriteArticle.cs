@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealWorldAspire.ApiService.Data;
 using RealWorldAspire.ApiService.Data.Models;
+using RealWorldAspire.ApiService.Extensions;
 
 namespace RealWorldAspire.ApiService.Features.Articles;
 
@@ -15,11 +16,7 @@ public static partial class ArticleHandlers
         RealWorldDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var user = await userManager.GetUserAsync(principal);
-        if (user == null)
-        {
-            return TypedResults.Unauthorized();
-        }
+        var user = await userManager.GetUserOrThrow(principal);
 
         var article = await dbContext.Articles
             .Where(x => x.Slug == slug)

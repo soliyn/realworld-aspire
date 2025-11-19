@@ -15,8 +15,8 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.10.3" />
         <PackageReference Include="Slugify.Core" Version="5.1.1" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Data\Configurations\" />
       <Folder Include="Migrations\" />
     </ItemGroup>
 

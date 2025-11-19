@@ -5,9 +5,7 @@ public static class ProfilesEndpoints
     public static IEndpointRouteBuilder MapProfilesEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var profilesEndPoints = endpoints.MapGroup("/profiles")
-            .WithTags("Profiles")
-            .WithOpenApi()
-        ;
+            .WithTags("Profiles");
 
         profilesEndPoints
             .MapGet("{username}", ProfilesHandlers.GetProfile)
@@ -20,14 +18,12 @@ public static class ProfilesEndpoints
             .MapPost("{username}/follow", ProfilesHandlers.Follow)
             .WithName("FollowUser")
             .WithSummary("Follow a user")
-            .RequireAuthorization()
         ;
 
         profilesEndPoints
             .MapDelete("{username}/follow", ProfilesHandlers.Unfollow)
             .WithName("UnfollowUser")
             .WithSummary("Unfollow a user")
-            .RequireAuthorization()
         ;
 
         return endpoints;

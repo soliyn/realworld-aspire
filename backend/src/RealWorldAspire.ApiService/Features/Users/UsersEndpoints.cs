@@ -5,9 +5,7 @@ public static class UsersEndpoints
     public static IEndpointRouteBuilder MapUsersEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var usersEndPoints = endpoints.MapGroup("/users")
-            .WithTags("Users")
-            .WithOpenApi()
-        ;
+            .WithTags("Users");
 
         usersEndPoints
             .MapPost("", UsersHandlers.Create)

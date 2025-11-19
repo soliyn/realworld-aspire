@@ -19,74 +19,7 @@ public class RealWorldDbContext : IdentityDbContext<AppUser>
     {
         base.OnModelCreating(builder);
 
-        builder.Entity<UserFollow>()
-            .HasKey(x => x.Id);
-
-        builder.Entity<UserFollow>()
-            .HasOne(uf => uf.Follower)
-            .WithMany(u => u.Following)
-            .HasForeignKey(uf => uf.FollowerId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.Entity<UserFollow>()
-            .HasOne(uf => uf.Following)
-            .WithMany(u => u.Followers)
-            .HasForeignKey(uf => uf.FollowingId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
-        builder.Entity<Article>()
-            .HasKey(x => x.ArticleId);
-        builder.Entity<Article>()
-            .Property(e => e.CreatedAt)
-            .HasConversion(
-                v => v.ToUniversalTime(),
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
-            )
-        ;
-        builder.Entity<Article>()
-            .Property(e => e.UpdatedAt)
-            .HasConversion(
-                v => v.ToUniversalTime(),
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
-            )
-        ;
-
-        builder.Entity<Article>()
-            .HasMany(e => e.FavoritedByUsers)
-            .WithMany(e => e.FavoritedArticles)
-            .UsingEntity<FavoriteArticle>()
-        ;
-
-        builder.Entity<Article>()
-            .HasMany(e => e.Tags)
-            .WithMany(e => e.Articles)
-        ;
-
-        builder.Entity<Article>()
-            .HasOne(e => e.Author)
-            .WithMany(e => e.Articles)
-        ;
-
-        builder.Entity<Comment>()
-            .HasKey(e => e.Id);
-        builder.Entity<Comment>()
-            .Property(e => e.CreatedAt)
-            .HasConversion(
-                v => v.ToUniversalTime(),
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
-            );
-        builder.Entity<Comment>()
-            .Property(e => e.UpdatedAt)
-            .HasConversion(
-                v => v.ToUniversalTime(),
-                v => DateTime.SpecifyKind(v, DateTimeKind.Utc)
-            );
-        builder.Entity<Comment>()
-            .HasOne(e => e.Author)
-            .WithMany(e => e.Comments);
-        builder.Entity<Comment>()
-            .HasOne(e => e.Article)
-            .WithMany(e => e.Comments);
+        builder.ApplyConfigurationsFromAssembly(typeof(RealWorldDbContext).Assembly);
     }
 
     public virtual DbSet<Article> Articles { get; set; }

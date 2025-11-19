@@ -7,9 +7,7 @@ public static class TagsEndpoints
     public static IEndpointRouteBuilder MapTagsEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var tagsEndPoints = endpoints.MapGroup("/tags")
-            .WithTags("Tags")
-            .WithOpenApi()
-        ;
+            .WithTags("Tags");
 
         tagsEndPoints
             .MapGet("", TagsHandlers.GetTags)
